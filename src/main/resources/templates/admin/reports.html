@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartPrint - Reports & Analytics</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="admin-page">
+    <!-- Inline header code -->
+    <header class="main-header">
+        <div class="container">
+            <div class="logo">
+                <h1>SmartPrint</h1>
+                <span class="badge">Admin</span>
+            </div>
+            <nav>
+                <ul class="main-menu">
+                    <li><a th:href="@{/}" th:classappend="${activePage == 'home' ? 'active' : ''}">Home</a></li>
+                    <li><a th:href="@{/dashboard}" th:classappend="${activePage == 'dashboard' ? 'active' : ''}">Dashboard</a></li>
+                    <li><a th:href="@{/printers}" th:classappend="${activePage == 'printers' ? 'active' : ''}">Printers</a></li>
+                    <li><a th:href="@{/jobs}" th:classappend="${activePage == 'jobs' ? 'active' : ''}">Print Jobs</a></li>
+                    <li><a th:href="@{/profile}" th:classappend="${activePage == 'profile' ? 'active' : ''}">Profile</a></li>
+                    <li><a th:href="@{/admin}" th:classappend="${activePage == 'admin' ? 'active' : ''}">Admin</a></li>
+                    
+                    <!-- Login/Logout Buttons -->
+                    <li th:if="${#authentication != null && #authentication.authenticated && !#strings.equals(#authentication.name, 'anonymousUser')}">
+                        <a th:href="@{/logout}" class="btn btn-secondary">Logout</a>
+                    </li>
+                    <li th:unless="${#authentication != null && #authentication.authenticated && !#strings.equals(#authentication.name, 'anonymousUser')}">
+                        <a th:href="@{/login}" class="btn btn-primary">Login</a>
+                    </li>
+                </ul>
+                <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <div class="admin-dashboard-container">
+        <aside class="sidebar">
+            <nav class="sidebar-nav">
+                <ul>
+                    <li>
+                        <a th:href="@{/admin}"><i class="fas fa-tachometer-alt"></i> Admin Dashboard</a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/users}"><i class="fas fa-users"></i> Manage Users</a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/printers}"><i class="fas fa-print"></i> Manage Printers</a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/jobs}"><i class="fas fa-tasks"></i> Print Jobs</a>
+                    </li>
+                    <li class="active">
+                        <a th:href="@{/admin/reports}"><i class="fas fa-chart-bar"></i> Reports</a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/settings}"><i class="fas fa-cog"></i> System Settings</a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <section class="welcome-section">
+                <h1>Reports & Analytics</h1>
+                <p>View system-wide statistics and reports for the SmartPrint platform.</p>
+            </section>
+
+            <section class="stats-section">
+                <div class="stats-card">
+                    <h3>Total Users</h3>
+                    <p class="stats-number" th:text="${totalUsers}">125</p>
+                </div>
+                <div class="stats-card">
+                    <h3>Total Printers</h3>
+                    <p class="stats-number" th:text="${totalPrinters}">25</p>
+                </div>
+                <div class="stats-card">
+                    <h3>Total Jobs</h3>
+                    <p class="stats-number" th:text="${totalJobs}">1,250</p>
+                </div>
+                <div class="stats-card">
+                    <h3>Completion Rate</h3>
+                    <p class="stats-number" th:text="${totalJobs > 0 ? #numbers.formatDecimal(completedJobs * 100 / totalJobs, 1, 1) + '%' : '0%'}">92.5%</p>
+                </div>
+            </section>
+
+            <section class="reports-container">
+                <div class="report-period-selector">
+                    <h3>Report Period</h3>
+                    <div class="period-buttons">
+                        <button class="period-btn active" data-period="week">Week</button>
+                        <button class="period-btn" data-period="month">Month</button>
+                        <button class="period-btn" data-period="quarter">Quarter</button>
+                        <button class="period-btn" data-period="year">Year</button>
+                    </div>
+                    <div class="date-range">
+                        <input type="date" id="startDate" name="startDate">
+                        <span>to</span>
+                        <input type="date" id="endDate" name="endDate">
+                        <button class="btn btn-primary btn-sm">Apply</button>
+                    </div>
+                </div>
+
+                <div class="report-charts">
+                    <div class="chart-container">
+                        <h3>Print Jobs Activity</h3>
+                        <canvas id="jobsChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Revenue Generated</h3>
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Jobs by Status</h3>
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Most Active Printers</h3>
+                        <canvas id="printersChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="report-tables">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h3>Monthly Summary</h3>
+                            <button class="btn btn-sm btn-outline-primary">Export CSV</button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Month</th>
+                                        <th>Total Jobs</th>
+                                        <th>Completed Jobs</th>
+                                        <th>Revenue</th>
+                                        <th>Active Users</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>January 2024</td>
+                                        <td>120</td>
+                                        <td>115</td>
+                                        <td>$158.75</td>
+                                        <td>45</td>
+                                    </tr>
+                                    <tr>
+                                        <td>February 2024</td>
+                                        <td>142</td>
+                                        <td>138</td>
+                                        <td>$187.50</td>
+                                        <td>52</td>
+                                    </tr>
+                                    <tr>
+                                        <td>March 2024</td>
+                                        <td>165</td>
+                                        <td>160</td>
+                                        <td>$215.25</td>
+                                        <td>58</td>
+                                    </tr>
+                                    <tr>
+                                        <td>April 2024</td>
+                                        <td>189</td>
+                                        <td>182</td>
+                                        <td>$245.80</td>
+                                        <td>65</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <footer class="main-footer">
+        <div class="container">
+            <p>&copy; 2024 SmartPrint. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script th:src="@{/js/script.js}"></script>
+    <script>
+        // Initialize charts when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Jobs Activity Chart
+            const jobsCtx = document.getElementById('jobsChart').getContext('2d');
+            const jobsChart = new Chart(jobsCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Print Jobs',
+                        data: [120, 142, 165, 189, 210, 225],
+                        borderColor: '#4338ca',
+                        backgroundColor: 'rgba(67, 56, 202, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    }
+                }
+            });
+
+            // Revenue Chart
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            const revenueChart = new Chart(revenueCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Revenue ($)',
+                        data: [158.75, 187.50, 215.25, 245.80, 275.50, 295.25],
+                        backgroundColor: 'rgba(88, 80, 236, 0.8)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    }
+                }
+            });
+
+            // Status Chart
+            const statusCtx = document.getElementById('statusChart').getContext('2d');
+            const statusChart = new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Completed', 'Pending', 'Processing', 'Cancelled'],
+                    datasets: [{
+                        data: [75, 10, 8, 7],
+                        backgroundColor: [
+                            '#10b981', // green
+                            '#f59e0b', // yellow
+                            '#3b82f6', // blue
+                            '#ef4444'  // red
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                        }
+                    }
+                }
+            });
+
+            // Printers Chart
+            const printersCtx = document.getElementById('printersChart').getContext('2d');
+            const printersChart = new Chart(printersCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Library', 'CS Dept', 'Dorm A', 'Admin Bldg', 'Engineering'],
+                    datasets: [{
+                        label: 'Jobs Processed',
+                        data: [85, 70, 55, 40, 35],
+                        backgroundColor: 'rgba(16, 185, 129, 0.8)'
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

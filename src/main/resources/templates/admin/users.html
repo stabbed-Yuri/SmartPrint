@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartPrint - Manage Users</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="stylesheet" th:href="@{/css/font-awesome-fix.css}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body class="admin-page">
+    <!-- Inline header code -->
+    <header class="main-header">
+        <div class="container">
+            <div class="logo">
+                <h1>SmartPrint</h1>
+                <span class="badge">Admin</span>
+            </div>
+            <nav>
+                <ul class="main-menu">
+                    <li><a th:href="@{/}" th:classappend="${activePage == 'home' ? 'active' : ''}">Home</a></li>
+                    <li><a th:href="@{/dashboard}" th:classappend="${activePage == 'dashboard' ? 'active' : ''}">Dashboard</a></li>
+                    <li><a th:href="@{/printers}" th:classappend="${activePage == 'printers' ? 'active' : ''}">Printers</a></li>
+                    <li><a th:href="@{/jobs}" th:classappend="${activePage == 'jobs' ? 'active' : ''}">Print Jobs</a></li>
+                    <li><a th:href="@{/profile}" th:classappend="${activePage == 'profile' ? 'active' : ''}">Profile</a></li>
+                    <li><a th:href="@{/admin}" th:classappend="${activePage == 'admin' ? 'active' : ''}">Admin</a></li>
+                    
+                    <!-- Login/Logout Buttons -->
+                    <li th:if="${#authentication != null && #authentication.authenticated && !#strings.equals(#authentication.name, 'anonymousUser')}">
+                        <a th:href="@{/logout}" class="btn btn-secondary">Logout</a>
+                    </li>
+                    <li th:unless="${#authentication != null && #authentication.authenticated && !#strings.equals(#authentication.name, 'anonymousUser')}">
+                        <a th:href="@{/login}" class="btn btn-primary">Login</a>
+                    </li>
+                </ul>
+                <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <div class="admin-dashboard-container">
+        <aside class="sidebar">
+            <nav class="sidebar-nav">
+                <ul>
+                    <li>
+                        <a th:href="@{/admin}"><i class="fas fa-tachometer-alt"></i> Admin Dashboard</a>
+                    </li>
+                    <li class="active">
+                        <a th:href="@{/admin/users}"><i class="fas fa-users"></i> Manage Users</a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/printers}"><i class="fas fa-print"></i> Manage Printers</a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/jobs}"><i class="fas fa-tasks"></i> Print Jobs</a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/reports}"><i class="fas fa-chart-bar"></i> Reports</a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/settings}"><i class="fas fa-cog"></i> System Settings</a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <section class="welcome-section">
+                <h1>Manage Users</h1>
+                <p>View and manage all users in the SmartPrint system.</p>
+            </section>
+
+            <section class="controls">
+                <div class="search-box">
+                    <input type="text" id="userSearch" placeholder="Search users...">
+                    <button><i class="fas fa-search"></i></button>
+                </div>
+                <div class="filter-controls">
+                    <select id="roleFilter">
+                        <option value="">All Roles</option>
+                        <option th:each="role : ${T(com.example.smartprint.model.UserRole).values()}" 
+                                th:value="${role}" th:text="${role}">STUDENT</option>
+                    </select>
+                    <select id="statusFilter">
+                        <option value="">All Statuses</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" id="addUserBtn">
+                    <i class="fas fa-plus"></i> Add User
+                </button>
+            </section>
+
+            <section class="table-container">
+                <div class="panel user-panel">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Balance</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:if="${users.empty}">
+                                    <td colspan="7">No users found</td>
+                                </tr>
+                                <tr th:each="user : ${users}">
+                                    <td th:text="${user.id}">1</td>
+                                    <td th:text="${user.name}">John Doe</td>
+                                    <td th:text="${user.email}">john@example.com</td>
+                                    <td th:text="${user.role}">STUDENT</td>
+                                    <td><span class="status-badge" th:classappend="${user.active ? 'active' : 'inactive'}" th:text="${user.active ? 'Active' : 'Inactive'}">Active</span></td>
+                                    <td th:text="${'$' + #numbers.formatDecimal(user.balance, 1, 2)}">$25.00</td>
+                                    <td class="actions-cell">
+                                        <a th:href="@{/admin/users/{id}(id=${user.id})}" class="btn btn-small btn-info" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a th:href="@{/admin/users/{id}/edit(id=${user.id})}" class="btn btn-small btn-warning" title="Edit User">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button class="btn btn-small btn-danger delete-user-btn" th:data-user-id="${user.id}" title="Delete User">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Pagination -->
+            <div class="pagination-container">
+                <div class="pagination">
+                    <button class="pagination-btn" disabled><i class="fas fa-chevron-left"></i></button>
+                    <button class="pagination-btn active">1</button>
+                    <button class="pagination-btn">2</button>
+                    <button class="pagination-btn">3</button>
+                    <button class="pagination-btn"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <footer class="main-footer">
+        <div class="container">
+            <p>&copy; 2024 SmartPrint. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script th:src="@{/js/script.js}"></script>
+</body>
+</html> 

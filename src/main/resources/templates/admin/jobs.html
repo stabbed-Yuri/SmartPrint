@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartPrint - Manage Print Jobs</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="admin-page">
+    <!-- Inline header code -->
+    <header class="main-header">
+        <div class="container">
+            <div class="logo">
+                <h1>SmartPrint</h1>
+                <span class="badge">Admin</span>
+            </div>
+            <nav>
+                <ul class="main-menu">
+                    <li><a th:href="@{/}" th:classappend="${activePage == 'home' ? 'active' : ''}">Home</a></li>
+                    <li><a th:href="@{/dashboard}" th:classappend="${activePage == 'dashboard' ? 'active' : ''}">Dashboard</a></li>
+                    <li><a th:href="@{/printers}" th:classappend="${activePage == 'printers' ? 'active' : ''}">Printers</a></li>
+                    <li><a th:href="@{/jobs}" th:classappend="${activePage == 'jobs' ? 'active' : ''}">Print Jobs</a></li>
+                    <li><a th:href="@{/profile}" th:classappend="${activePage == 'profile' ? 'active' : ''}">Profile</a></li>
+                    <li><a th:href="@{/admin}" th:classappend="${activePage == 'admin' ? 'active' : ''}">Admin</a></li>
+                    
+                    <!-- Login/Logout Buttons -->
+                    <li th:if="${#authentication != null && #authentication.authenticated && !#strings.equals(#authentication.name, 'anonymousUser')}">
+                        <a th:href="@{/logout}" class="btn btn-secondary">Logout</a>
+                    </li>
+                    <li th:unless="${#authentication != null && #authentication.authenticated && !#strings.equals(#authentication.name, 'anonymousUser')}">
+                        <a th:href="@{/login}" class="btn btn-primary">Login</a>
+                    </li>
+                </ul>
+                <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <div class="admin-dashboard-container">
+        <aside class="sidebar">
+            <nav class="sidebar-nav">
+                <ul>
+                    <li>
+                        <a th:href="@{/admin}"><i class="fas fa-tachometer-alt"></i> Admin Dashboard</a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/users}"><i class="fas fa-users"></i> Manage Users</a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/printers}"><i class="fas fa-print"></i> Manage Printers</a>
+                    </li>
+                    <li class="active">
+                        <a th:href="@{/admin/jobs}"><i class="fas fa-tasks"></i> Print Jobs</a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/reports}"><i class="fas fa-chart-bar"></i> Reports</a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/settings}"><i class="fas fa-cog"></i> System Settings</a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <section class="welcome-section">
+                <h1>Manage Print Jobs</h1>
+                <p>View and manage all print jobs in the SmartPrint system.</p>
+            </section>
+
+            <section class="stats-section">
+                <div class="stats-card">
+                    <h3>Total Jobs</h3>
+                    <p class="stats-number" th:text="${printJobs.size()}">125</p>
+                </div>
+                <div class="stats-card">
+                    <h3>Pending Jobs</h3>
+                    <p class="stats-number" th:text="${printJobs.?[status == T(com.example.smartprint.model.PrintJobStatus).PENDING].size()}">18</p>
+                </div>
+                <div class="stats-card">
+                    <h3>Processing Jobs</h3>
+                    <p class="stats-number" th:text="${printJobs.?[status == T(com.example.smartprint.model.PrintJobStatus).PROCESSING].size()}">7</p>
+                </div>
+                <div class="stats-card">
+                    <h3>Completed Jobs</h3>
+                    <p class="stats-number" th:text="${printJobs.?[status == T(com.example.smartprint.model.PrintJobStatus).COMPLETED].size()}">100</p>
+                </div>
+            </section>
+
+            <section class="controls">
+                <div class="search-box">
+                    <input type="text" id="jobSearch" placeholder="Search jobs...">
+                    <button><i class="fas fa-search"></i></button>
+                </div>
+                <div class="filter-controls">
+                    <select id="statusFilter">
+                        <option value="">All Statuses</option>
+                        <option th:each="status : ${T(com.example.smartprint.model.PrintJobStatus).values()}"
+                                th:value="${status}" th:text="${status}">PENDING</option>
+                    </select>
+                    <select id="printerFilter">
+                        <option value="">All Printers</option>
+                        <option th:each="printer : ${printJobs.![printer].distinct()}"
+                                th:if="${printer != null}"
+                                th:value="${printer.id}" th:text="${printer.name}">Library Printer</option>
+                    </select>
+                </div>
+                <div class="date-range">
+                    <input type="date" id="startDate" placeholder="Start Date">
+                    <input type="date" id="endDate" placeholder="End Date">
+                </div>
+            </section>
+
+            <section class="table-container">
+                <div class="panel job-panel">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>User</th>
+                                    <th>Document</th>
+                                    <th>Printer</th>
+                                    <th>Pages</th>
+                                    <th>Cost</th>
+                                    <th>Status</th>
+                                    <th>Created At</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:if="${printJobs.empty}">
+                                    <td colspan="9">No print jobs found</td>
+                                </tr>
+                                <tr th:each="job : ${printJobs}">
+                                    <td th:text="${job.id}">1</td>
+                                    <td th:text="${job.user != null ? job.user.name : 'Unknown'}">John Doe</td>
+                                    <td th:text="${job.documentName}">Assignment.pdf</td>
+                                    <td th:text="${job.printer != null ? job.printer.name : 'Unknown'}">Library Printer</td>
+                                    <td th:text="${job.totalPages}">5</td>
+                                    <td th:text="${'$' + #numbers.formatDecimal(job.totalCost, 1, 2)}">$1.25</td>
+                                    <td><span class="status-badge" th:classappend="${job.status.toString().toLowerCase()}" th:text="${job.status}">PENDING</span></td>
+                                    <td th:text="${#dates.format(job.createdAt, 'yyyy-MM-dd HH:mm')}">2023-05-10 14:30</td>
+                                    <td class="actions-cell">
+                                        <a th:href="@{/admin/jobs/{id}(id=${job.id})}" class="btn btn-small btn-info" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <button th:if="${job.status.toString() == 'PENDING'}" 
+                                                class="btn btn-small btn-warning job-action-btn" 
+                                                th:data-job-id="${job.id}" 
+                                                th:data-action="process">
+                                            <i class="fas fa-play"></i>
+                                        </button>
+                                        <button th:if="${job.status.toString() == 'PROCESSING'}" 
+                                                class="btn btn-small btn-success job-action-btn" 
+                                                th:data-job-id="${job.id}" 
+                                                th:data-action="complete">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                        <button th:if="${job.status.toString() != 'COMPLETED' && job.status.toString() != 'CANCELLED'}" 
+                                                class="btn btn-small btn-danger job-action-btn" 
+                                                th:data-job-id="${job.id}" 
+                                                th:data-action="cancel">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Pagination -->
+            <div class="pagination-container">
+                <div class="pagination">
+                    <button class="pagination-btn" disabled><i class="fas fa-chevron-left"></i></button>
+                    <button class="pagination-btn active">1</button>
+                    <button class="pagination-btn">2</button>
+                    <button class="pagination-btn">3</button>
+                    <button class="pagination-btn"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <footer class="main-footer">
+        <div class="container">
+            <p>&copy; 2024 SmartPrint. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script th:src="@{/js/script.js}"></script>
+</body>
+</html> 

@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartPrint - My Printers</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .printer-table-container {
+            overflow-x: auto;
+            background-color: #fff;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        .printer-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .printer-table th {
+            background-color: #f1f5f9;
+            color: #475569;
+            font-weight: 600;
+            text-align: left;
+            padding: 1rem;
+            font-size: 0.875rem;
+        }
+        .printer-table td {
+            padding: 1rem;
+            border-top: 1px solid #e2e8f0;
+            font-size: 0.875rem;
+            color: #0f172a;
+        }
+        .printer-table tr:hover {
+            background-color: #f8fafc;
+        }
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: capitalize;
+        }
+        .status-indicator::before {
+            content: "";
+            display: inline-block;
+            width: 0.5rem;
+            height: 0.5rem;
+            border-radius: 50%;
+            margin-right: 0.25rem;
+        }
+        .status-online {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+        .status-online::before {
+            background-color: #16a34a;
+        }
+        .status-offline {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
+        .status-offline::before {
+            background-color: #dc2626;
+        }
+        .status-maintenance {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        .status-maintenance::before {
+            background-color: #f59e0b;
+        }
+        .status-error {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+        .status-error::before {
+            background-color: #3b82f6;
+        }
+        .actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .btn-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: none;
+            border: none;
+            color: #64748b;
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: 0.25rem;
+            transition: all 0.2s;
+        }
+        .btn-icon:hover {
+            background-color: #f1f5f9;
+            color: #0f172a;
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .add-button {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .add-button::before {
+            content: "+";
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            margin-right: 1rem;
+            padding: 0.25rem 0.5rem;
+            background-color: rgba(67, 56, 202, 0.1);
+            border-radius: 4px;
+        }
+        .user-info span {
+            font-size: 0.875rem;
+            color: #4338ca;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .user-role {
+            font-size: 0.75rem;
+            color: #6366f1;
+            margin-top: 0.25rem;
+        }
+    </style>
+    <!-- Include the modal styles -->
+    <style th:replace="~{fragments/footer :: modal-styles}"></style>
+</head>
+<body>
+    <!-- Inline header code -->
+    <header class="main-header">
+        <div class="container">
+            <div class="logo">
+                <h1>SmartPrint</h1>
+            </div>
+            <nav>
+                <ul class="main-menu">
+                    <li><a th:href="@{/}" th:classappend="${activePage == 'home' ? 'active' : ''}">Home</a></li>
+                    <li><a th:href="@{/dashboard}" th:classappend="${activePage == 'dashboard' ? 'active' : ''}">Dashboard</a></li>
+                    <li><a th:href="@{/printers}" th:classappend="${activePage == 'printers' ? 'active' : ''}">Printers</a></li>
+                    <li><a th:href="@{/jobs}" th:classappend="${activePage == 'jobs' ? 'active' : ''}">Print Jobs</a></li>
+                    <li><a th:href="@{/profile}" th:classappend="${activePage == 'profile' ? 'active' : ''}">Profile</a></li>
+                    
+                    <!-- User Info - Only shown when logged in -->
+                    <li class="user-info" th:if="${#authentication != null && #authentication.authenticated && !#strings.equals(#authentication.name, 'anonymousUser')}">
+                        <span>
+                            <span th:text="${#authentication.name}">user@example.com</span>
+                            <span class="user-role" th:if="${#authentication.authorities[0] != null}"
+                                  th:text="${#authentication.authorities[0].authority}">ROLE_USER</span>
+                        </span>
+                    </li>
+                    
+                    <!-- Login/Logout Buttons -->
+                    <li th:if="${#authentication != null && #authentication.authenticated && !#strings.equals(#authentication.name, 'anonymousUser')}">
+                        <a th:href="@{/logout}" class="btn btn-secondary">Logout</a>
+                    </li>
+                    <li th:unless="${#authentication != null && #authentication.authenticated && !#strings.equals(#authentication.name, 'anonymousUser')}">
+                        <a th:href="@{/login}" class="btn btn-primary">Login</a>
+                    </li>
+                </ul>
+                <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </nav>
+        </div>
+        <div class="mobile-menu">
+            <ul>
+                <li><a th:href="@{/}" th:classappend="${activePage == 'home' ? 'active' : ''}">Home</a></li>
+                <li><a th:href="@{/dashboard}" th:classappend="${activePage == 'dashboard' ? 'active' : ''}">Dashboard</a></li>
+                <li><a th:href="@{/printers}" th:classappend="${activePage == 'printers' ? 'active' : ''}">Printers</a></li>
+                <li><a th:href="@{/jobs}" th:classappend="${activePage == 'jobs' ? 'active' : ''}">Print Jobs</a></li>
+                <li><a th:href="@{/profile}" th:classappend="${activePage == 'profile' ? 'active' : ''}">Profile</a></li>
+                
+                <!-- Login/Logout Buttons -->
+                <li th:if="${#authentication != null && #authentication.authenticated && !#strings.equals(#authentication.name, 'anonymousUser')}">
+                    <a th:href="@{/logout}" class="btn btn-secondary">Logout</a>
+                </li>
+                <li th:unless="${#authentication != null && #authentication.authenticated && !#strings.equals(#authentication.name, 'anonymousUser')}">
+                    <a th:href="@{/login}" class="btn btn-primary">Login</a>
+                </li>
+            </ul>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <div class="container">
+            <div class="section-header">
+                <h1>My Printers</h1>
+                <button class="btn btn-primary add-button open-printer-modal">Add Printer</button>
+            </div>
+            
+            <div class="printer-table-container">
+                <table class="printer-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                            <th>IP Address</th>
+                            <th>Queue</th>
+                            <th>Rate (B&W)</th>
+                            <th>Rate (Color)</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="printer : ${printers}">
+                            <td th:text="${printer.name}">HP LaserJet Pro</td>
+                            <td th:text="${printer.location}">Library 2nd Floor</td>
+                            <td>
+                                <span th:class="'status-indicator status-' + ${printer.status?.toString()?.toLowerCase()}" 
+                                      th:text="${printer.status}">ONLINE</span>
+                            </td>
+                            <td th:text="${printer.ipAddress}">192.168.1.100</td>
+                            <td th:text="${printer.queueLength}">3</td>
+                            <td th:text="'৳' + ${printer.blackAndWhiteRate}">৳2.00</td>
+                            <td th:text="'৳' + ${printer.colorRate}">৳5.00</td>
+                            <td class="actions">
+                                <button class="btn-icon edit" th:data-id="${printer.id}" 
+                                        onclick="checkStatus(this.getAttribute('data-id'), this)">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                                    </svg>
+                                </button>
+                                <button class="btn-icon edit" th:data-id="${printer.id}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                    </svg>
+                                </button>
+                                <button class="btn-icon delete" th:data-id="${printer.id}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M3 6h18"></path>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
+                                        <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                    </svg>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr th:if="${printers == null || printers.isEmpty()}">
+                            <td colspan="8" style="text-align: center; padding: 2rem;">
+                                No printers found. Click "Add Printer" to add your first printer.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Include the footer with printer modal -->
+    <footer th:replace="~{fragments/footer :: standard-footer}"></footer>
+
+    <!-- Include JavaScript for the site -->
+    <script th:src="@{/js/script.js}"></script>
+    <script th:src="@{/js/debug.js}"></script>
+    
+    <!-- Include the modal scripts -->
+    <script th:replace="~{fragments/footer :: modal-scripts}"></script>
+    
+    <script>
+        // Function to check printer status
+        function checkStatus(printerId, button) {
+            // Find the printer row
+            const row = button.closest('tr');
+            const ipAddress = row.cells[3].textContent;
+            const statusCell = row.cells[2].querySelector('.status-indicator');
+            
+            // Update status to checking
+            statusCell.textContent = 'Checking...';
+            statusCell.className = 'status-indicator';
+            
+            // In a real implementation, this would make an API call to check the status
+            setTimeout(() => {
+                try {
+                    fetch(`http://${ipAddress}:5000/status`, { 
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json'
+                        },
+                        // Set a timeout to avoid hanging
+                        signal: AbortSignal.timeout(5000)
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            return response.json();
+                        }
+                        throw new Error('Failed to connect to printer');
+                    })
+                    .then(data => {
+                        statusCell.textContent = 'ONLINE';
+                        statusCell.className = 'status-indicator status-online';
+                        
+                        // Update the printer status in the database
+                        fetch(`/api/printers/${printerId}/status`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ status: 'ONLINE' })
+                        }).catch(error => console.error('Error updating printer status:', error));
+                    })
+                    .catch(error => {
+                        statusCell.textContent = 'OFFLINE';
+                        statusCell.className = 'status-indicator status-offline';
+                        console.error('Error checking printer status:', error);
+                        
+                        // Update the printer status in the database
+                        fetch(`/api/printers/${printerId}/status`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ status: 'OFFLINE' })
+                        }).catch(error => console.error('Error updating printer status:', error));
+                    });
+                } catch (error) {
+                    statusCell.textContent = 'ERROR';
+                    statusCell.className = 'status-indicator status-error';
+                    console.error('Error:', error);
+                }
+            }, 1000);
+        }
+        
+        // Add event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Delete buttons
+            const deleteButtons = document.querySelectorAll('.btn-icon.delete');
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const printerId = this.getAttribute('data-id');
+                    if (confirm('Are you sure you want to delete this printer? This action cannot be undone.')) {
+                        fetch(`/api/printers/${printerId}`, {
+                            method: 'DELETE'
+                        })
+                        .then(response => {
+                            if (response.ok) {
+                                window.location.reload();
+                            } else {
+                                alert('Failed to delete printer. Please try again.');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error deleting printer:', error);
+                            alert('Failed to delete printer. Please try again.');
+                        });
+                    }
+                });
+            });
+            
+            // Edit buttons
+            const editButtons = document.querySelectorAll('.btn-icon.edit:not(:first-child)');
+            editButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const printerId = this.getAttribute('data-id');
+                    window.location.href = `/printers/${printerId}/edit`;
+                });
+            });
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartPrint - Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* Existing styles... */
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            margin-right: 1rem;
+            padding: 0.25rem 0.5rem;
+            background-color: rgba(67, 56, 202, 0.1);
+            border-radius: 4px;
+        }
+        .user-info span {
+            font-size: 0.875rem;
+            color: #4338ca;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .user-role {
+            font-size: 0.75rem;
+            color: #6366f1;
+            margin-top: 0.25rem;
+        }
+    </style>
+</head>
+<body class="dashboard-page">
+    <!-- Inline header code -->
+    <header class="main-header">
+        <div class="container">
+            <div class="logo">
+                <h1>SmartPrint</h1>
+            </div>
+            <nav>
+                <ul class="main-menu">
+                    <li><a th:href="@{/}" th:classappend="${activePage == 'home' ? 'active' : ''}">Home</a></li>
+                    <li><a th:href="@{/dashboard}" th:classappend="${activePage == 'dashboard' ? 'active' : ''}">Dashboard</a></li>
+                    <li><a th:href="@{/printers}" th:classappend="${activePage == 'printers' ? 'active' : ''}">Printers</a></li>
+                    <li><a th:href="@{/jobs}" th:classappend="${activePage == 'jobs' ? 'active' : ''}">Print Jobs</a></li>
+                    <li><a th:href="@{/profile}" th:classappend="${activePage == 'profile' ? 'active' : ''}">Profile</a></li>
+                    
+                    <!-- User Info - Only shown when logged in -->
+                    <li class="user-info" th:if="${#authentication != null && #authentication.authenticated && !#strings.equals(#authentication.name, 'anonymousUser')}">
+                        <span>
+                            <span th:text="${#authentication.name}">user@example.com</span>
+                            <span class="user-role" th:if="${#authentication.authorities[0] != null}"
+                                  th:text="${#authentication.authorities[0].authority}">ROLE_USER</span>
+                        </span>
+                    </li>
+                    
+                    <!-- Login/Logout Buttons -->
+                    <li th:if="${#authentication != null && #authentication.authenticated && !#strings.equals(#authentication.name, 'anonymousUser')}">
+                        <a th:href="@{/logout}" class="btn btn-secondary">Logout</a>
+                    </li>
+                    <li th:unless="${#authentication != null && #authentication.authenticated && !#strings.equals(#authentication.name, 'anonymousUser')}">
+                        <a th:href="@{/login}" class="btn btn-primary">Login</a>
+                    </li>
+                </ul>
+                <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </nav>
+        </div>
+        <div class="mobile-menu">
+            <ul>
+                <li><a th:href="@{/}" th:classappend="${activePage == 'home' ? 'active' : ''}">Home</a></li>
+                <li><a th:href="@{/dashboard}" th:classappend="${activePage == 'dashboard' ? 'active' : ''}">Dashboard</a></li>
+                <li><a th:href="@{/printers}" th:classappend="${activePage == 'printers' ? 'active' : ''}">Printers</a></li>
+                <li><a th:href="@{/jobs}" th:classappend="${activePage == 'jobs' ? 'active' : ''}">Print Jobs</a></li>
+                <li><a th:href="@{/profile}" th:classappend="${activePage == 'profile' ? 'active' : ''}">Profile</a></li>
+                
+                <!-- Login/Logout Buttons -->
+                <li th:if="${#authentication != null && #authentication.authenticated && !#strings.equals(#authentication.name, 'anonymousUser')}">
+                    <a th:href="@{/logout}" class="btn btn-secondary">Logout</a>
+                </li>
+                <li th:unless="${#authentication != null && #authentication.authenticated && !#strings.equals(#authentication.name, 'anonymousUser')}">
+                    <a th:href="@{/login}" class="btn btn-primary">Login</a>
+                </li>
+            </ul>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="active">
+                        <a th:href="@{/dashboard}">
+                            <i class="fas fa-home"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/printers}">
+                            <i class="fas fa-print"></i>
+                            <span>Printers</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/print-jobs}">
+                            <i class="fas fa-file-alt"></i>
+                            <span>Print Jobs</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/profile}">
+                            <i class="fas fa-user"></i>
+                            <span>Profile</span>
+                        </a>
+                    </li>
+                    <li th:if="${isAdmin}">
+                        <a th:href="@{/admin}">
+                            <i class="fas fa-cog"></i>
+                            <span>Admin Panel</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="dashboard-content">
+            <div class="welcome-section">
+                <h1>Welcome, <span th:text="${user.name}">User</span>!</h1>
+                <p>Here's an overview of your print jobs and available printers.</p>
+            </div>
+
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-print"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>Available Printers</h3>
+                        <p class="stat-value" th:text="${availablePrinters}">12</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>Active Print Jobs</h3>
+                        <p class="stat-value" th:text="${activePrintJobs}">5</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>Completed Jobs</h3>
+                        <p class="stat-value" th:text="${completedPrintJobs}">24</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-panels">
+                <div class="panel recent-jobs">
+                    <div class="panel-header">
+                        <h2>Recent Print Jobs</h2>
+                        <a th:href="@{/print-jobs}" class="view-all">View All</a>
+                    </div>
+                    <div class="panel-content">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Job ID</th>
+                                    <th>File Name</th>
+                                    <th>Printer</th>
+                                    <th>Status</th>
+                                    <th>Submitted</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="job : ${recentJobs}" th:class="${job.status.toString().toLowerCase()}">
+                                    <td th:text="${job.id}">J12345</td>
+                                    <td th:text="${job.fileName}">Document.pdf</td>
+                                    <td th:text="${job.printer.name}">Lab Printer 2</td>
+                                    <td>
+                                        <span class="status-badge" th:text="${job.status}" th:classappend="${job.status.toString().toLowerCase()}">Completed</span>
+                                    </td>
+                                    <td th:text="${#temporals.format(job.createdAt, 'dd MMM yyyy HH:mm')}">12 Jun 2024 14:30</td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(recentJobs)}">
+                                    <td colspan="5" class="empty-state">No print jobs found</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="panel nearby-printers">
+                    <div class="panel-header">
+                        <h2>Nearby Printers</h2>
+                        <a th:href="@{/printers}" class="view-all">View All</a>
+                    </div>
+                    <div class="panel-content">
+                        <div class="printer-grid">
+                            <div th:each="printer : ${nearbyPrinters}" class="printer-card">
+                                <div class="printer-status" th:classappend="${printer.status.toString().toLowerCase()}">
+                                    <span th:text="${printer.status}">Available</span>
+                                </div>
+                                <h3 th:text="${printer.name}">Library Printer</h3>
+                                <p class="printer-location">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span th:text="${printer.location}">Main Library, Floor 2</span>
+                                </p>
+                                <div class="printer-details">
+                                    <p>
+                                        <i class="fas fa-money-bill-wave"></i>
+                                        <span th:text="${'$' + printer.blackAndWhiteRate}">$0.10</span> per page
+                                    </p>
+                                    <p>
+                                        <i class="fas fa-clock"></i>
+                                        <span th:text="${printer.queueLength}">3</span> in queue
+                                    </p>
+                                </div>
+                                <a th:href="@{'/print-jobs/new?printer=' + ${printer.id}}" class="btn btn-primary btn-sm">
+                                    Print Here
+                                </a>
+                            </div>
+                            <div th:if="${#lists.isEmpty(nearbyPrinters)}" class="empty-state">
+                                No nearby printers available
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <footer class="main-footer">
+        <div class="container">
+            <p>&copy; 2024 SmartPrint. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script th:src="@{/js/script.js}"></script>
+</body>
+</html> 

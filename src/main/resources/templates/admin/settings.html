@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartPrint - System Settings</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="admin-page">
+    <!-- Inline header code -->
+    <header class="main-header">
+        <div class="container">
+            <div class="logo">
+                <h1>SmartPrint</h1>
+                <span class="badge">Admin</span>
+            </div>
+            <nav>
+                <ul class="main-menu">
+                    <li><a th:href="@{/}" th:classappend="${activePage == 'home' ? 'active' : ''}">Home</a></li>
+                    <li><a th:href="@{/dashboard}" th:classappend="${activePage == 'dashboard' ? 'active' : ''}">Dashboard</a></li>
+                    <li><a th:href="@{/printers}" th:classappend="${activePage == 'printers' ? 'active' : ''}">Printers</a></li>
+                    <li><a th:href="@{/jobs}" th:classappend="${activePage == 'jobs' ? 'active' : ''}">Print Jobs</a></li>
+                    <li><a th:href="@{/profile}" th:classappend="${activePage == 'profile' ? 'active' : ''}">Profile</a></li>
+                    <li><a th:href="@{/admin}" th:classappend="${activePage == 'admin' ? 'active' : ''}">Admin</a></li>
+                    
+                    <!-- Login/Logout Buttons -->
+                    <li th:if="${#authentication != null && #authentication.authenticated && !#strings.equals(#authentication.name, 'anonymousUser')}">
+                        <a th:href="@{/logout}" class="btn btn-secondary">Logout</a>
+                    </li>
+                    <li th:unless="${#authentication != null && #authentication.authenticated && !#strings.equals(#authentication.name, 'anonymousUser')}">
+                        <a th:href="@{/login}" class="btn btn-primary">Login</a>
+                    </li>
+                </ul>
+                <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <div class="admin-dashboard-container">
+        <aside class="sidebar">
+            <nav class="sidebar-nav">
+                <ul>
+                    <li>
+                        <a th:href="@{/admin}"><i class="fas fa-tachometer-alt"></i> Admin Dashboard</a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/users}"><i class="fas fa-users"></i> Manage Users</a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/printers}"><i class="fas fa-print"></i> Manage Printers</a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/jobs}"><i class="fas fa-tasks"></i> Print Jobs</a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/reports}"><i class="fas fa-chart-bar"></i> Reports</a>
+                    </li>
+                    <li class="active">
+                        <a th:href="@{/admin/settings}"><i class="fas fa-cog"></i> System Settings</a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <section class="welcome-section">
+                <h1>System Settings</h1>
+                <p>Configure system-wide settings for the SmartPrint platform.</p>
+            </section>
+
+            <section class="settings-section">
+                <div class="settings-tabs">
+                    <button class="tab-btn active" data-tab="general">General</button>
+                    <button class="tab-btn" data-tab="pricing">Pricing</button>
+                    <button class="tab-btn" data-tab="notifications">Notifications</button>
+                    <button class="tab-btn" data-tab="security">Security</button>
+                    <button class="tab-btn" data-tab="backup">Backup & Maintenance</button>
+                </div>
+
+                <div class="tab-content active" id="general">
+                    <h2>General Settings</h2>
+                    <form class="settings-form" th:action="@{/admin/settings/general}" method="post">
+                        <div class="form-group">
+                            <label for="siteName">Site Name</label>
+                            <input type="text" id="siteName" name="siteName" value="SmartPrint" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="siteDescription">Site Description</label>
+                            <textarea id="siteDescription" name="siteDescription" class="form-control">SmartPrint - University Print Management System</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="contactEmail">Contact Email</label>
+                            <input type="email" id="contactEmail" name="contactEmail" value="admin@smartprint.edu" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="timezone">Timezone</label>
+                            <select id="timezone" name="timezone" class="form-control">
+                                <option value="UTC">UTC</option>
+                                <option value="America/New_York" selected>Eastern Time (US)</option>
+                                <option value="America/Chicago">Central Time (US)</option>
+                                <option value="America/Denver">Mountain Time (US)</option>
+                                <option value="America/Los_Angeles">Pacific Time (US)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>System Features</label>
+                            <div class="form-check">
+                                <input type="checkbox" id="enableStatistics" name="enableStatistics" checked>
+                                <label for="enableStatistics">Enable Statistics Collection</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" id="enableUserRegistration" name="enableUserRegistration" checked>
+                                <label for="enableUserRegistration">Allow User Registration</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" id="enableMaintenanceMode" name="enableMaintenanceMode">
+                                <label for="enableMaintenanceMode">Maintenance Mode</label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save General Settings</button>
+                    </form>
+                </div>
+
+                <div class="tab-content" id="pricing">
+                    <h2>Pricing Settings</h2>
+                    <form class="settings-form" th:action="@{/admin/settings/pricing}" method="post">
+                        <div class="form-group">
+                            <label for="defaultBlackAndWhiteRate">Default Black & White Rate (per page)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" id="defaultBlackAndWhiteRate" name="defaultBlackAndWhiteRate" value="0.10" step="0.01" min="0" class="form-control">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="defaultColorRate">Default Color Rate (per page)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" id="defaultColorRate" name="defaultColorRate" value="0.25" step="0.01" min="0" class="form-control">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="bulkDiscountThreshold">Bulk Discount Threshold (pages)</label>
+                            <input type="number" id="bulkDiscountThreshold" name="bulkDiscountThreshold" value="50" min="0" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="bulkDiscountPercentage">Bulk Discount Percentage</label>
+                            <div class="input-group">
+                                <input type="number" id="bulkDiscountPercentage" name="bulkDiscountPercentage" value="10" min="0" max="100" step="1" class="form-control">
+                                <span class="input-group-text">%</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Pricing Options</label>
+                            <div class="form-check">
+                                <input type="checkbox" id="enableBulkDiscounts" name="enableBulkDiscounts" checked>
+                                <label for="enableBulkDiscounts">Enable Bulk Discounts</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" id="enableStudentDiscounts" name="enableStudentDiscounts" checked>
+                                <label for="enableStudentDiscounts">Enable Student Discounts</label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Pricing Settings</button>
+                    </form>
+                </div>
+
+                <div class="tab-content" id="notifications">
+                    <h2>Notification Settings</h2>
+                    <form class="settings-form" th:action="@{/admin/settings/notifications}" method="post">
+                        <div class="form-group">
+                            <label>Email Notifications</label>
+                            <div class="form-check">
+                                <input type="checkbox" id="enableEmailNotifications" name="enableEmailNotifications" checked>
+                                <label for="enableEmailNotifications">Enable Email Notifications</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" id="notifyOnNewUser" name="notifyOnNewUser" checked>
+                                <label for="notifyOnNewUser">Notify Admin on New User Registration</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" id="notifyOnJobCompletion" name="notifyOnJobCompletion" checked>
+                                <label for="notifyOnJobCompletion">Notify User on Print Job Completion</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" id="notifyOnLowBalance" name="notifyOnLowBalance" checked>
+                                <label for="notifyOnLowBalance">Notify User on Low Balance</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="lowBalanceThreshold">Low Balance Threshold</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" id="lowBalanceThreshold" name="lowBalanceThreshold" value="5.00" step="0.01" min="0" class="form-control">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Notification Settings</button>
+                    </form>
+                </div>
+
+                <div class="tab-content" id="security">
+                    <h2>Security Settings</h2>
+                    <form class="settings-form" th:action="@{/admin/settings/security}" method="post">
+                        <div class="form-group">
+                            <label for="sessionTimeout">Session Timeout (minutes)</label>
+                            <input type="number" id="sessionTimeout" name="sessionTimeout" value="30" min="5" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="maxLoginAttempts">Max Login Attempts</label>
+                            <input type="number" id="maxLoginAttempts" name="maxLoginAttempts" value="5" min="1" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="lockoutDuration">Account Lockout Duration (minutes)</label>
+                            <input type="number" id="lockoutDuration" name="lockoutDuration" value="15" min="1" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Security Options</label>
+                            <div class="form-check">
+                                <input type="checkbox" id="requireStrongPasswords" name="requireStrongPasswords" checked>
+                                <label for="requireStrongPasswords">Require Strong Passwords</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" id="enableTwoFactorAuth" name="enableTwoFactorAuth">
+                                <label for="enableTwoFactorAuth">Enable Two-Factor Authentication</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" id="enforceIPRestriction" name="enforceIPRestriction">
+                                <label for="enforceIPRestriction">Enforce IP Restrictions</label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Security Settings</button>
+                    </form>
+                </div>
+
+                <div class="tab-content" id="backup">
+                    <h2>Backup & Maintenance</h2>
+                    <form class="settings-form" th:action="@{/admin/settings/backup}" method="post">
+                        <div class="form-group">
+                            <label for="backupFrequency">Backup Frequency</label>
+                            <select id="backupFrequency" name="backupFrequency" class="form-control">
+                                <option value="daily" selected>Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="backupRetention">Backup Retention (days)</label>
+                            <input type="number" id="backupRetention" name="backupRetention" value="30" min="1" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="backupLocation">Backup Location</label>
+                            <input type="text" id="backupLocation" name="backupLocation" value="/var/backups/smartprint" class="form-control">
+                        </div>
+                        <div class="action-buttons">
+                            <button type="button" class="btn btn-warning" id="runBackupBtn">Run Backup Now</button>
+                            <button type="button" class="btn btn-danger" id="purgeDataBtn">Purge Old Data</button>
+                            <button type="button" class="btn btn-secondary" id="optimizeDatabaseBtn">Optimize Database</button>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Backup Settings</button>
+                    </form>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <footer class="main-footer">
+        <div class="container">
+            <p>&copy; 2024 SmartPrint. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script th:src="@{/js/script.js}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab switching
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Remove active class from all tabs
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    
+                    // Add active class to clicked tab
+                    button.classList.add('active');
+                    const tabId = button.getAttribute('data-tab');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+            
+            // Show alert for dangerous actions
+            document.getElementById('purgeDataBtn').addEventListener('click', function(e) {
+                if (!confirm('WARNING: This will permanently delete old data. Are you sure you want to continue?')) {
+                    e.preventDefault();
+                }
+            });
+            
+            // Run backup confirmation
+            document.getElementById('runBackupBtn').addEventListener('click', function() {
+                alert('Backup process started. You will be notified when it completes.');
+            });
+            
+            // Optimize database confirmation
+            document.getElementById('optimizeDatabaseBtn').addEventListener('click', function() {
+                alert('Database optimization started. This may take a few minutes.');
+            });
+        });
+    </script>
+</body>
+</html> 

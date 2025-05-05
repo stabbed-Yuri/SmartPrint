@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <!-- Standard Footer Fragment -->
+    <footer th:fragment="standard-footer" class="main-footer">
+        <div class="container">
+            <p>&copy; 2024 SmartPrint. All rights reserved.</p>
+        </div>
+        
+        <!-- Printer Modal Fragment - included in the footer for easy access across pages -->
+        <div id="printerModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Add New Printer</h2>
+                    <span class="close">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <form id="add-printer-form" method="POST" th:action="@{/printers/new}">
+                        <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}" />
+                        <div class="form-group">
+                            <label for="printer-name">Printer Name*</label>
+                            <input type="text" id="printer-name" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="printer-location">Location*</label>
+                            <input type="text" id="printer-location" name="location" required>
+                            <small>Enter a descriptive location (e.g., Library 2nd Floor, Science Building Room 101)</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="printer-ip">IP Address*</label>
+                            <input type="text" id="printer-ip" name="ipAddress" placeholder="e.g., 192.168.1.100" required>
+                            <small>The IP address of the Raspberry Pi running the print server</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="printer-bw-rate">Black & White Rate (৳)*</label>
+                            <input type="number" id="printer-bw-rate" name="blackAndWhiteRate" min="0" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="printer-color-rate">Color Rate (৳)*</label>
+                            <input type="number" id="printer-color-rate" name="colorRate" min="0" step="0.01" required>
+                        </div>
+                        
+                        <div class="status-section">
+                            <h3>Printer Status Check</h3>
+                            <p>After entering the IP address, click to check if the printer is online:</p>
+                            <div class="status-container">
+                                <button type="button" id="check-status" class="btn btn-outline">Check Status</button>
+                                <span id="status-indicator" class="status-indicator status-offline">Not Checked</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary close-modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Add Printer</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Modal related JavaScript -->
+    <script th:fragment="modal-scripts">
+        document.addEventListener('DOMContentLoaded', function() {
+            // Modal functionality
+            const modal = document.getElementById('printerModal');
+            const openModalButtons = document.querySelectorAll('.open-printer-modal');
+            const closeButtons = document.querySelectorAll('.close, .close-modal');
+            
+            // Open modal
+            openModalButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    modal.style.display = 'flex';
+                });
+            });
+            
+            // Close modal
+            closeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    modal.style.display = 'none';
+                });
+            });
+            
+            // Close modal when clicking outside
+            window.addEventListener('click', function(event) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+            
+            // Status check functionality
+            const checkStatusBtn = document.getElementById('check-status');
+            const statusIndicator = document.getElementById('status-indicator');
+            const ipAddressInput = document.getElementById('printer-ip');
+            
+            if (checkStatusBtn && statusIndicator && ipAddressInput) {
+                checkStatusBtn.addEventListener('click', function() {
+                    const ipAddress = ipAddressInput.value.trim();
+                    
+                    if (!ipAddress) {
+                        alert('Please enter an IP address first');
+                        return;
+                    }
+                    
+                    statusIndicator.textContent = 'Checking...';
+                    statusIndicator.className = 'status-indicator';
+                    
+                    // Add a timeout to simulate checking
+                    setTimeout(() => {
+                        try {
+                            // In a real implementation, this would make an API call to check the status
+                            fetch(`http://${ipAddress}:5000/status`, { 
+                                method: 'GET',
+                                headers: {
+                                    'Accept': 'application/json'
+                                },
+                                // Set a timeout to avoid hanging
+                                signal: AbortSignal.timeout(5000)
+                            })
+                            .then(response => {
+                                if (response.ok) {
+                                    return response.json();
+                                }
+                                throw new Error('Failed to connect to printer');
+                            })
+                            .then(data => {
+                                statusIndicator.textContent = 'Online';
+                                statusIndicator.className = 'status-indicator status-online';
+                            })
+                            .catch(error => {
+                                statusIndicator.textContent = 'Offline or Unreachable';
+                                statusIndicator.className = 'status-indicator status-offline';
+                                console.error('Error checking printer status:', error);
+                            });
+                        } catch (error) {
+                            statusIndicator.textContent = 'Error Checking Status';
+                            statusIndicator.className = 'status-indicator status-offline';
+                            console.error('Error:', error);
+                        }
+                    }, 1000);
+                });
+            }
+        });
+    </script>
+    
+    <!-- CSS for modal -->
+    <style th:fragment="modal-styles">
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background-color: #fff;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            animation: modalFadeIn 0.3s;
+        }
+        
+        @keyframes modalFadeIn {
+            from {opacity: 0; transform: translateY(-50px);}
+            to {opacity: 1; transform: translateY(0);}
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: #1e293b;
+        }
+        
+        .modal-body {
+            padding: 1.5rem;
+        }
+        
+        .close {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #64748b;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .close:hover {
+            color: #0f172a;
+        }
+        
+        /* Form Styles for Modal */
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #334155;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            transition: border-color 0.2s;
+        }
+        
+        .form-group input:focus {
+            border-color: #3b82f6;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .form-group small {
+            display: block;
+            margin-top: 0.25rem;
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        /* Status Indicator Styles */
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .status-section {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .status-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 0.75rem;
+        }
+        
+        .status-online {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+        
+        .status-offline {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
+    </style>
+</body>
+</html> 

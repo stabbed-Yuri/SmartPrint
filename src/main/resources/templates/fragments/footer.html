@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <footer th:fragment="footer" class="bg-light py-4 mt-auto">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="mb-3">SmartPrint</h5>
+                    <p class="text-muted">Smart printing solution for students and professionals.</p>
+                    <div class="d-flex gap-3 mb-3">
+                        <a href="#" class="text-decoration-none text-secondary">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="text-decoration-none text-secondary">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="text-decoration-none text-secondary">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="text-decoration-none text-secondary">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="col-md-2">
+                    <h6 class="mb-3">Quick Links</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a th:href="@{/}" class="text-decoration-none text-secondary">Home</a></li>
+                        <li class="mb-2"><a th:href="@{/dashboard}" class="text-decoration-none text-secondary">Dashboard</a></li>
+                        <li class="mb-2"><a th:href="@{/printers}" class="text-decoration-none text-secondary">Printers</a></li>
+                        <li class="mb-2"><a th:href="@{/jobs}" class="text-decoration-none text-secondary">Print Jobs</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-md-2">
+                    <h6 class="mb-3">Help & Support</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-secondary">FAQ</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-secondary">Contact Us</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-secondary">Privacy Policy</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-secondary">Terms of Service</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-md-2">
+                    <h6 class="mb-3">Account</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a th:href="@{/profile}" class="text-decoration-none text-secondary">My Profile</a></li>
+                        <li class="mb-2"><a th:href="@{/settings}" class="text-decoration-none text-secondary">Settings</a></li>
+                        <li class="mb-2">
+                            <a th:if="${#authentication != null && #authentication.authenticated && !#strings.equals(#authentication.name, 'anonymousUser')}"
+                               th:href="@{/logout}" class="text-decoration-none text-secondary">Logout</a>
+                            <a th:unless="${#authentication != null && #authentication.authenticated && !#strings.equals(#authentication.name, 'anonymousUser')}"
+                               th:href="@{/login}" class="text-decoration-none text-secondary">Login</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <hr>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-0">&copy; <span th:text="${#dates.format(#dates.createNow(), 'yyyy')}">2024</span> SmartPrint. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0">Made with <i class="fas fa-heart text-danger"></i> by SmartPrint Team</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- A simplified footer that some pages might want to use -->
+    <footer th:fragment="standard-footer" class="bg-light py-3 mt-auto">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-0">&copy; <span th:text="${#dates.format(#dates.createNow(), 'yyyy')}">2024</span> SmartPrint. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <a th:href="@{/}" class="text-decoration-none text-secondary me-3">Home</a>
+                    <a th:href="@{/dashboard}" class="text-decoration-none text-secondary me-3">Dashboard</a>
+                    <a th:href="@{/printers}" class="text-decoration-none text-secondary me-3">Printers</a>
+                    <a th:href="@{/profile}" class="text-decoration-none text-secondary">Profile</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Modal styles fragment -->
+    <style th:fragment="modal-styles">
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        .modal-content {
+            border-radius: 0.5rem;
+            border: none;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .modal-header {
+            border-bottom: 1px solid #e5e7eb;
+            padding: 1rem 1.5rem;
+        }
+        .modal-body {
+            padding: 1.5rem;
+        }
+        .modal-footer {
+            border-top: 1px solid #e5e7eb;
+            padding: 1rem 1.5rem;
+        }
+    </style>
+    
+    <!-- Modal scripts fragment -->
+    <script th:fragment="modal-scripts">
+        document.addEventListener('DOMContentLoaded', function() {
+            // Open printer modal
+            const openModalButton = document.querySelector('.open-printer-modal');
+            if (openModalButton) {
+                openModalButton.addEventListener('click', function() {
+                    const printerModal = new bootstrap.Modal(document.getElementById('printerModal'));
+                    printerModal.show();
+                });
+            }
+            
+            // Form validation for the printer modal
+            const printerForm = document.getElementById('printerForm');
+            if (printerForm) {
+                printerForm.addEventListener('submit', function(event) {
+                    if (!printerForm.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    printerForm.classList.add('was-validated');
+                });
+            }
+        });
+    </script>
+    
+    <!-- Modal Fragment for forms and dialogs -->
+    <div th:fragment="modal(id, title, content, footer)" class="modal fade" th:id="${id}" tabindex="-1" aria-labelledby="${id}Label" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" th:id="${id} + 'Label'" th:text="${title}">Modal Title</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <th:block th:replace="${content}">Modal content goes here</th:block>
+                </div>
+                <div class="modal-footer">
+                    <th:block th:replace="${footer}">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary">Save changes</button>
+                    </th:block>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

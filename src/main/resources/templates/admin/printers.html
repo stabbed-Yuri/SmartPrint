@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartPrint - Manage Printers</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="stylesheet" th:href="@{/css/font-awesome-fix.css}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body class="admin-page">
+    <!-- Inline header code -->
+    <header class="main-header">
+        <div class="container">
+            <div class="logo">
+                <h1>SmartPrint</h1>
+                <span class="badge">Admin</span>
+            </div>
+            <nav>
+                <ul class="main-menu">
+                    <li><a th:href="@{/}" th:classappend="${activePage == 'home' ? 'active' : ''}">Home</a></li>
+                    <li><a th:href="@{/dashboard}" th:classappend="${activePage == 'dashboard' ? 'active' : ''}">Dashboard</a></li>
+                    <li><a th:href="@{/printers}" th:classappend="${activePage == 'printers' ? 'active' : ''}">Printers</a></li>
+                    <li><a th:href="@{/jobs}" th:classappend="${activePage == 'jobs' ? 'active' : ''}">Print Jobs</a></li>
+                    <li><a th:href="@{/profile}" th:classappend="${activePage == 'profile' ? 'active' : ''}">Profile</a></li>
+                    <li><a th:href="@{/admin}" th:classappend="${activePage == 'admin' ? 'active' : ''}">Admin</a></li>
+                    
+                    <!-- Login/Logout Buttons -->
+                    <li th:if="${#authentication != null && #authentication.authenticated && !#strings.equals(#authentication.name, 'anonymousUser')}">
+                        <a th:href="@{/logout}" class="btn btn-secondary">Logout</a>
+                    </li>
+                    <li th:unless="${#authentication != null && #authentication.authenticated && !#strings.equals(#authentication.name, 'anonymousUser')}">
+                        <a th:href="@{/login}" class="btn btn-primary">Login</a>
+                    </li>
+                </ul>
+                <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <div class="admin-dashboard-container">
+        <aside class="sidebar">
+            <nav class="sidebar-nav">
+                <ul>
+                    <li>
+                        <a th:href="@{/admin}"><i class="fas fa-tachometer-alt"></i> Admin Dashboard</a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/users}"><i class="fas fa-users"></i> Manage Users</a>
+                    </li>
+                    <li class="active">
+                        <a th:href="@{/admin/printers}"><i class="fas fa-print"></i> Manage Printers</a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/jobs}"><i class="fas fa-tasks"></i> Print Jobs</a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/reports}"><i class="fas fa-chart-bar"></i> Reports</a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/settings}"><i class="fas fa-cog"></i> System Settings</a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <section class="welcome-section">
+                <h1>Manage Printers</h1>
+                <p>View and manage all printers in the SmartPrint system.</p>
+            </section>
+
+            <section class="stats-section">
+                <div class="stats-card">
+                    <h3>Total Printers</h3>
+                    <p class="stats-number" th:text="${printers.size()}">25</p>
+                </div>
+                <div class="stats-card">
+                    <h3>Online Printers</h3>
+                    <p class="stats-number" th:text="${printers.?[status == T(com.example.smartprint.model.PrinterStatus).ONLINE].size()}">18</p>
+                </div>
+                <div class="stats-card">
+                    <h3>Offline Printers</h3>
+                    <p class="stats-number" th:text="${printers.?[status == T(com.example.smartprint.model.PrinterStatus).OFFLINE].size()}">4</p>
+                </div>
+                <div class="stats-card">
+                    <h3>Maintenance Mode</h3>
+                    <p class="stats-number" th:text="${printers.?[status == T(com.example.smartprint.model.PrinterStatus).MAINTENANCE].size()}">3</p>
+                </div>
+            </section>
+
+            <section class="controls">
+                <div class="search-box">
+                    <input type="text" id="printerSearch" placeholder="Search printers...">
+                    <button><i class="fas fa-search"></i></button>
+                </div>
+                <div class="filter-controls">
+                    <select id="statusFilter">
+                        <option value="">All Statuses</option>
+                        <option th:each="status : ${T(com.example.smartprint.model.PrinterStatus).values()}"
+                                th:value="${status}" th:text="${status}">ONLINE</option>
+                    </select>
+                    <select id="locationFilter">
+                        <option value="">All Locations</option>
+                        <option th:each="location : ${printers.![location].distinct()}"
+                                th:value="${location}" th:text="${location}">Main Library</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" id="addPrinterBtn">
+                    <i class="fas fa-plus"></i> Add Printer
+                </button>
+            </section>
+
+            <section class="printers-grid">
+                <div class="printer-card" th:each="printer : ${printers}">
+                    <div class="printer-header">
+                        <h3 th:text="${printer.name}">Library Printer</h3>
+                        <span class="printer-status" th:classappend="${printer.status.toString().toLowerCase()}" 
+                             th:text="${printer.status}">ONLINE</span>
+                    </div>
+                    <div class="printer-details">
+                        <p><i class="fas fa-map-marker-alt"></i> <span th:text="${printer.location}">Main Library</span></p>
+                        <p><i class="fas fa-user"></i> <span th:text="${printer.owner != null ? printer.owner.name : 'No Owner'}">John Doe</span></p>
+                        <p><i class="fas fa-dollar-sign"></i> <span th:text="${'B&W: $' + printer.blackAndWhiteRate + ' | Color: $' + printer.colorRate}">B&W: $0.10 | Color: $0.25</span></p>
+                        <p><i class="fas fa-list-ol"></i> <span th:text="${'Queue: ' + printer.queueLength + ' jobs'}">Queue: 3 jobs</span></p>
+                    </div>
+                    <div class="printer-actions">
+                        <a th:href="@{/admin/printers/{id}(id=${printer.id})}" class="btn btn-small btn-info">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+                        <a th:href="@{/admin/printers/{id}/edit(id=${printer.id})}" class="btn btn-small btn-warning">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        <button th:if="${printer.status.toString() == 'ONLINE'}" 
+                                class="btn btn-small btn-secondary printer-toggle-btn" 
+                                th:data-printer-id="${printer.id}" 
+                                th:data-action="offline">
+                            <i class="fas fa-power-off"></i> Set Offline
+                        </button>
+                        <button th:unless="${printer.status.toString() == 'ONLINE'}" 
+                                class="btn btn-small btn-success printer-toggle-btn" 
+                                th:data-printer-id="${printer.id}" 
+                                th:data-action="online">
+                            <i class="fas fa-power-off"></i> Set Online
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Pagination -->
+            <div class="pagination-container">
+                <div class="pagination">
+                    <button class="pagination-btn" disabled><i class="fas fa-chevron-left"></i></button>
+                    <button class="pagination-btn active">1</button>
+                    <button class="pagination-btn">2</button>
+                    <button class="pagination-btn">3</button>
+                    <button class="pagination-btn"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <footer class="main-footer">
+        <div class="container">
+            <p>&copy; 2024 SmartPrint. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script th:src="@{/js/script.js}"></script>
+</body>
+</html> 

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartPrint - Admin Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <style>
+        .user-info {
+            display: flex;
+            align-items: center;
+            margin-right: 1rem;
+            padding: 0.25rem 0.5rem;
+            background-color: rgba(67, 56, 202, 0.1);
+            border-radius: 4px;
+        }
+        .user-info span {
+            font-size: 0.875rem;
+            color: #4338ca;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .user-role {
+            font-size: 0.75rem;
+            color: #6366f1;
+            margin-top: 0.25rem;
+        }
+    </style>
+</head>
+<body class="admin-page">
+    <!-- Inline header code -->
+    <header class="main-header">
+        <div class="container">
+            <div class="logo">
+                <h1>SmartPrint</h1>
+                <span class="badge">Admin</span>
+            </div>
+            <nav>
+                <ul class="main-menu">
+                    <li><a th:href="@{/}" th:classappend="${activePage == 'home' ? 'active' : ''}">Home</a></li>
+                    <li><a th:href="@{/dashboard}" th:classappend="${activePage == 'dashboard' ? 'active' : ''}">Dashboard</a></li>
+                    <li><a th:href="@{/printers}" th:classappend="${activePage == 'printers' ? 'active' : ''}">Printers</a></li>
+                    <li><a th:href="@{/jobs}" th:classappend="${activePage == 'jobs' ? 'active' : ''}">Print Jobs</a></li>
+                    <li><a th:href="@{/profile}" th:classappend="${activePage == 'profile' ? 'active' : ''}">Profile</a></li>
+                    <li><a th:href="@{/admin}" th:classappend="${activePage == 'admin' ? 'active' : ''}">Admin</a></li>
+                    
+                    <!-- User Info - Only shown when logged in -->
+                    <li class="user-info" th:if="${#authentication != null && #authentication.authenticated && !#strings.equals(#authentication.name, 'anonymousUser')}">
+                        <span>
+                            <span th:text="${#authentication.name}">admin@example.com</span>
+                            <span class="user-role" th:if="${#authentication.authorities[0] != null}"
+                                  th:text="${#authentication.authorities[0].authority}">ROLE_ADMIN</span>
+                        </span>
+                    </li>
+                    
+                    <!-- Login/Logout Buttons -->
+                    <li th:if="${#authentication != null && #authentication.authenticated && !#strings.equals(#authentication.name, 'anonymousUser')}">
+                        <a th:href="@{/logout}" class="btn btn-secondary">Logout</a>
+                    </li>
+                    <li th:unless="${#authentication != null && #authentication.authenticated && !#strings.equals(#authentication.name, 'anonymousUser')}">
+                        <a th:href="@{/login}" class="btn btn-primary">Login</a>
+                    </li>
+                </ul>
+                <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </nav>
+        </div>
+        <div class="mobile-menu">
+            <ul>
+                <li><a th:href="@{/}" th:classappend="${activePage == 'home' ? 'active' : ''}">Home</a></li>
+                <li><a th:href="@{/dashboard}" th:classappend="${activePage == 'dashboard' ? 'active' : ''}">Dashboard</a></li>
+                <li><a th:href="@{/printers}" th:classappend="${activePage == 'printers' ? 'active' : ''}">Printers</a></li>
+                <li><a th:href="@{/jobs}" th:classappend="${activePage == 'jobs' ? 'active' : ''}">Print Jobs</a></li>
+                <li><a th:href="@{/profile}" th:classappend="${activePage == 'profile' ? 'active' : ''}">Profile</a></li>
+                <li><a th:href="@{/admin}" th:classappend="${activePage == 'admin' ? 'active' : ''}">Admin</a></li>
+                
+                <!-- Login/Logout Buttons -->
+                <li th:if="${#authentication != null && #authentication.authenticated && !#strings.equals(#authentication.name, 'anonymousUser')}">
+                    <a th:href="@{/logout}" class="btn btn-secondary">Logout</a>
+                </li>
+                <li th:unless="${#authentication != null && #authentication.authenticated && !#strings.equals(#authentication.name, 'anonymousUser')}">
+                    <a th:href="@{/login}" class="btn btn-primary">Login</a>
+                </li>
+            </ul>
+        </div>
+    </header>
+
+    <div class="admin-dashboard-container">
+        <aside class="sidebar">
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="active">
+                        <a href="#"><i class="fas fa-tachometer-alt"></i> Admin Dashboard</a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/users}"><i class="fas fa-users"></i> Manage Users</a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/printers}"><i class="fas fa-print"></i> Manage Printers</a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/jobs}"><i class="fas fa-tasks"></i> Print Jobs</a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/reports}"><i class="fas fa-chart-bar"></i> Reports</a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/settings}"><i class="fas fa-cog"></i> System Settings</a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <section class="welcome-section">
+                <h1>Admin Dashboard</h1>
+                <p>Manage the SmartPrint system and monitor real-time statistics.</p>
+            </section>
+
+            <section class="stats-section">
+                <div class="stats-card">
+                    <h3>Total Users</h3>
+                    <p class="stats-number" th:text="${totalUsers}">125</p>
+                </div>
+                <div class="stats-card">
+                    <h3>Active Printers</h3>
+                    <p class="stats-number" th:text="${activePrinters}">18</p>
+                </div>
+                <div class="stats-card">
+                    <h3>Jobs Today</h3>
+                    <p class="stats-number" th:text="${jobsToday}">42</p>
+                </div>
+                <div class="stats-card">
+                    <h3>Total Revenue</h3>
+                    <p class="stats-number">$<span th:text="${#numbers.formatDecimal(totalRevenue, 1, 2)}">1,256.75</span></p>
+                </div>
+            </section>
+
+            <section class="admin-panels">
+                <div class="panel user-panel">
+                    <div class="panel-header">
+                        <h2>Recent Users</h2>
+                        <a th:href="@{/admin/users}" class="view-all">View All</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:if="${recentUsers.empty}">
+                                    <td colspan="6">No users found</td>
+                                </tr>
+                                <tr th:each="user : ${recentUsers}">
+                                    <td th:text="${user.id}">1</td>
+                                    <td th:text="${user.name}">John Doe</td>
+                                    <td th:text="${user.email}">john@example.com</td>
+                                    <td th:text="${user.role}">STUDENT</td>
+                                    <td><span class="status-badge" th:classappend="${user.active ? 'active' : 'inactive'}" th:text="${user.active ? 'Active' : 'Inactive'}">Active</span></td>
+                                    <td>
+                                        <a th:href="@{/admin/users/{id}(id=${user.id})}" class="btn btn-small btn-info">View</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="panel printer-panel">
+                    <div class="panel-header">
+                        <h2>Printer Status</h2>
+                        <a th:href="@{/admin/printers}" class="view-all">View All</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Location</th>
+                                    <th>Status</th>
+                                    <th>Jobs Queue</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:if="${printers.empty}">
+                                    <td colspan="6">No printers found</td>
+                                </tr>
+                                <tr th:each="printer : ${printers}">
+                                    <td th:text="${printer.id}">1</td>
+                                    <td th:text="${printer.name}">Library Printer</td>
+                                    <td th:text="${printer.location}">Main Library</td>
+                                    <td><span class="status-badge" th:classappend="${printer.status.toString().toLowerCase()}" th:text="${printer.status}">ONLINE</span></td>
+                                    <td th:text="${printer.queuedJobs}">3</td>
+                                    <td>
+                                        <a th:href="@{/admin/printers/{id}(id=${printer.id})}" class="btn btn-small btn-info">Manage</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="panel job-panel">
+                    <div class="panel-header">
+                        <h2>Recent Print Jobs</h2>
+                        <a th:href="@{/admin/jobs}" class="view-all">View All</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>User</th>
+                                    <th>Document</th>
+                                    <th>Printer</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:if="${recentJobs.empty}">
+                                    <td colspan="6">No recent jobs found</td>
+                                </tr>
+                                <tr th:each="job : ${recentJobs}">
+                                    <td th:text="${job.id}">1</td>
+                                    <td th:text="${job.user.name}">John Doe</td>
+                                    <td th:text="${job.documentName}">Assignment.pdf</td>
+                                    <td th:text="${job.printer.name}">Library Printer</td>
+                                    <td><span class="status-badge" th:classappend="${job.status.toString().toLowerCase()}" th:text="${job.status}">PENDING</span></td>
+                                    <td>
+                                        <a th:href="@{/admin/jobs/{id}(id=${job.id})}" class="btn btn-small btn-info">Details</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <footer class="main-footer">
+        <div class="container">
+            <p>&copy; 2024 SmartPrint. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script th:src="@{/js/script.js}"></script>
+</body>
+</html> 

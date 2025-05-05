@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        .avatar-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <header th:fragment="header" class="bg-white shadow-sm sticky-top">
+        <nav class="navbar navbar-expand-lg">
+            <div class="container">
+                <!-- Logo -->
+                <a class="navbar-brand fw-bold text-primary" th:href="@{/}">
+                    <i class="fas fa-print me-2"></i>SmartPrint
+                </a>
+                
+                <!-- Mobile Toggle -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" 
+                        aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                
+                <!-- Main Navigation -->
+                <div class="collapse navbar-collapse" id="mainNavbar">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link" th:classappend="${activePage == 'home' ? 'active' : ''}" th:href="@{/}">Home</a>
+                        </li>
+                        <!-- Only show these nav items if user is logged in -->
+                        <li class="nav-item" th:if="${authenticated}">
+                            <a class="nav-link" th:classappend="${activePage == 'dashboard' ? 'active' : ''}" th:href="@{/dashboard}">Dashboard</a>
+                        </li>
+                        <li class="nav-item" th:if="${authenticated}">
+                            <a class="nav-link" th:classappend="${activePage == 'printers' ? 'active' : ''}" th:href="@{/printers}">Printers</a>
+                        </li>
+                        <li class="nav-item" th:if="${authenticated}">
+                            <a class="nav-link" th:classappend="${activePage == 'jobs' ? 'active' : ''}" th:href="@{/jobs}">Print Jobs</a>
+                        </li>
+                    </ul>
+                    
+                    <!-- Authentication Links -->
+                    <div class="d-flex align-items-center">
+                        <!-- User is authenticated -->
+                        <div th:if="${authenticated == true}" class="d-flex align-items-center">
+                            <div class="dropdown me-3">
+                                <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <div class="avatar-circle me-2 bg-primary text-white d-flex align-items-center justify-content-center">
+                                        <span th:if="${currentUser != null}" th:text="${#strings.substring(currentUser, 0, 1).toUpperCase()}">U</span>
+                                    </div>
+                                    <span th:text="${currentUser}">user@example.com</span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <span class="dropdown-item-text text-muted small">
+                                            <i class="fas fa-user-tag me-1"></i>
+                                            <span th:if="${userRole != null}" th:text="${#strings.replace(userRole, 'ROLE_', '')}">USER</span>
+                                        </span>
+                                    </li>
+                                    <li><hr class="dropdown-divider my-1"></li>
+                                    <li><a class="dropdown-item" th:href="@{/profile}"><i class="fas fa-user me-2"></i>Profile</a></li>
+                                    <li><a class="dropdown-item" th:href="@{/settings}"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                                    <li th:if="${isAdmin == true}">
+                                        <a class="dropdown-item" th:href="@{/admin}"><i class="fas fa-shield-alt me-2"></i>Admin Panel</a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-danger" th:href="@{/logout}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- User is not authenticated -->
+                        <div th:unless="${authenticated == true}">
+                            <a th:href="@{/login}" class="btn btn-outline-primary me-2">Login</a>
+                            <a th:href="@{/signup}" class="btn btn-primary">Sign Up</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+</body>
+</html>
