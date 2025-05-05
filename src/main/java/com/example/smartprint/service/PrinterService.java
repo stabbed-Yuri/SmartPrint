@@ -1,7 +1,6 @@
 package com.example.smartprint.service;
 
-import com.example.smartprint.persistent.Printer;
-import com.example.smartprint.persistent.PrintJob;
+import com.example.smartprint.model.*;
 import com.example.smartprint.repository.PrinterRepository;
 import com.example.smartprint.repository.PrintJobRepository;
 import lombok.RequiredArgsConstructor;

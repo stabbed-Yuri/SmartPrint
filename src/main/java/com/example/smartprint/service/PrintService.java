@@ -1,7 +1,9 @@
 package com.example.smartprint.service;
 
-import com.example.smartprint.persistent.PrintJob;
-import com.example.smartprint.persistent.Printer;
+import com.example.smartprint.model.*;
+import com.example.smartprint.repository.PrintJobRepository;
+import com.example.smartprint.repository.PrinterRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;

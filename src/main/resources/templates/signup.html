@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Sign Up', ~{})}">
+    <title>Sign Up - SmartPrint</title>
+</head>
+
+<body th:replace="~{fragments/layout :: main-layout('Sign Up', ~{::content}, ~{}, ~{})}">
+    <th:block th:fragment="content">
+        <div class="container py-5">
+            <div class="row justify-content-center">
+                <div class="col-md-8 col-lg-6 col-xl-5">
+                    <div class="card shadow border-0 rounded-lg">
+                        <div class="card-header bg-white text-center py-4">
+                            <h3 class="mb-0 text-primary">Create Account</h3>
+                            <p class="text-muted">Register to start using SmartPrint</p>
+                        </div>
+                        <div class="card-body p-4 p-md-5">
+                            <!-- Error Message -->
+                            <div th:if="${error}" class="alert alert-danger mb-4" role="alert">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                    <span th:text="${error}">Error message</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Registration Form -->
+                            <form th:action="@{/signup}" method="post" th:object="${user}">
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" id="name" name="name" placeholder="Your name" required>
+                                    <label for="name">Full Name</label>
+                                </div>
+                                <div class="form-floating mb-3">
+                                    <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com" required>
+                                    <label for="email">Email address</label>
+                                </div>
+                                <div class="form-floating mb-3">
+                                    <input type="password" class="form-control" id="password" name="password" placeholder="Password" 
+                                           pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$" 
+                                           title="Password must be at least 8 characters and include letters and numbers" required>
+                                    <label for="password">Password</label>
+                                    <div class="form-text small">Minimum 8 characters, must include letters and numbers</div>
+                                </div>
+                                <div class="form-floating mb-4">
+                                    <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" placeholder="Confirm Password" required>
+                                    <label for="confirmPassword">Confirm Password</label>
+                                </div>
+                                <div class="form-check mb-4">
+                                    <input class="form-check-input" type="checkbox" value="" id="terms" name="terms" required>
+                                    <label class="form-check-label" for="terms">
+                                        I agree to the <a href="#" class="text-decoration-none">Terms of Service</a> and <a href="#" class="text-decoration-none">Privacy Policy</a>
+                                    </label>
+                                </div>
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary btn-lg">Create Account</button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="card-footer bg-white text-center py-3">
+                            <div class="small">
+                                Already have an account? <a th:href="@{/login}" class="text-decoration-none">Sign in</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </th:block>
+</body>
+</html> 

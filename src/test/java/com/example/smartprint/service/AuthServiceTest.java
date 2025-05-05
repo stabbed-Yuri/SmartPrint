@@ -1,6 +1,6 @@
 package com.example.smartprint.service;
 
-import com.example.smartprint.persistent.User;
+import com.example.smartprint.model.User;
 import com.example.smartprint.repository.UserRepository;
 import com.example.smartprint.utils.JwtUtils;
 import org.junit.jupiter.api.BeforeEach;

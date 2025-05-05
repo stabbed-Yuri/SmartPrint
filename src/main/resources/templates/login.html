@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Login', ~{})}">
+    <title>Login - SmartPrint</title>
+</head>
+
+<body th:replace="~{fragments/layout :: main-layout('Login', ~{::content}, ~{}, ~{})}">
+    <th:block th:fragment="content">
+        <div class="container py-5">
+            <div class="row justify-content-center">
+                <div class="col-md-8 col-lg-6 col-xl-5">
+                    <div class="card shadow border-0 rounded-lg">
+                        <div class="card-header bg-white text-center py-4">
+                            <h3 class="mb-0 text-primary">Welcome Back</h3>
+                            <p class="text-muted">Sign in to continue to SmartPrint</p>
+                        </div>
+                        <div class="card-body p-4 p-md-5">
+                            <!-- Error Message -->
+                            <div th:if="${param.error}" class="alert alert-danger mb-4" role="alert">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                    <span>Invalid username or password.</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Logout Message -->
+                            <div th:if="${param.logout}" class="alert alert-success mb-4" role="alert">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    <span>You have been logged out successfully.</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Registration Success Message -->
+                            <div th:if="${param.registered}" class="alert alert-success mb-4" role="alert">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    <span>Registration successful! Please login with your credentials.</span>
+                                </div>
+                            </div>
+
+                            <!-- Login Form -->
+                            <form th:action="@{/login}" method="post">
+                                <div class="form-floating mb-3">
+                                    <input type="email" class="form-control" id="email" name="username" placeholder="name@example.com" required autofocus>
+                                    <label for="email">Email address</label>
+                                </div>
+                                <div class="form-floating mb-4">
+                                    <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+                                    <label for="password">Password</label>
+                                </div>
+                                <div class="form-check mb-4">
+                                    <input class="form-check-input" type="checkbox" value="" id="remember-me" name="remember-me">
+                                    <label class="form-check-label" for="remember-me">
+                                        Remember me
+                                    </label>
+                                </div>
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary btn-lg">Sign In</button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="card-footer bg-white text-center py-3">
+                            <div class="small">
+                                Don't have an account? <a th:href="@{/signup}" class="text-decoration-none">Sign up now</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </th:block>
+</body>
+</html>
