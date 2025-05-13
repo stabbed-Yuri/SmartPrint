@@ -1,5 +1,7 @@
 package com.example.smartprint.controller;
 
+import com.example.smartprint.model.Orientation;
+import com.example.smartprint.model.PageSize;
 import com.example.smartprint.model.PrintJob;
 import com.example.smartprint.model.PrintJobStatus;
 import com.example.smartprint.model.Printer;
@@ -25,7 +27,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
+import org.springframework.web.bind.annotation.PathVariable;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -125,39 +129,8 @@ public class WebController {
     }
 
     @GetMapping("/dashboard")
-    public String dashboard(Model model, Authentication authentication) {
-        // Add the active page attribute
-        model.addAttribute("activePage", "dashboard");
-        
-        // Get the current authenticated user and add to model
-        if (authentication != null && authentication.isAuthenticated()) {
-            String email = authentication.getName();
-            User user = userService.getUserFromToken("Bearer " + jwtUtils.generateToken(email));
-            model.addAttribute("user", user);
-            
-            // Add some basic dashboard data
-            List<Printer> nearbyPrinters = printerRepository.findByStatus(PrinterStatus.ONLINE);
-            model.addAttribute("nearbyPrinters", nearbyPrinters);
-            model.addAttribute("availablePrinters", nearbyPrinters.size());
-            
-            // Check if user has admin role
-            boolean isAdmin = user.getRole() == UserRole.ADMIN;
-            model.addAttribute("isAdmin", isAdmin);
-            
-            // Get user's print jobs if any
-            if (user != null) {
-                List<PrintJob> recentJobs = printJobRepository.findByUser(user);
-                model.addAttribute("recentJobs", recentJobs);
-                model.addAttribute("activePrintJobs", recentJobs.stream()
-                    .filter(job -> job.getStatus() == PrintJobStatus.PENDING || job.getStatus() == PrintJobStatus.PROCESSING)
-                    .count());
-                model.addAttribute("completedPrintJobs", recentJobs.stream()
-                    .filter(job -> job.getStatus() == PrintJobStatus.COMPLETED)
-                    .count());
-            }
-        }
-        
-        return "dashboard";
+    public String dashboardRedirect() {
+        return "redirect:/";
     }
 
     @GetMapping("/profile")
@@ -182,6 +155,17 @@ public class WebController {
     @GetMapping("/printing")
     public String printing(Model model) {
         model.addAttribute("activePage", "printing");
+        
+        // Get available printers
+        List<Printer> availablePrinters = printerRepository.findByStatus(PrinterStatus.ONLINE);
+        model.addAttribute("printers", availablePrinters);
+        
+        // Add print job object for form binding
+        PrintJob printJob = new PrintJob();
+        printJob.setPageSize(PageSize.A4); // Set default page size to A4
+        printJob.setOrientation(Orientation.PORTRAIT); // Set default orientation to PORTRAIT
+        model.addAttribute("printJob", printJob);
+        
         return "printing";
     }
 
@@ -258,71 +242,45 @@ public class WebController {
 
     @GetMapping("/admin")
     public String adminDashboard(Model model, Authentication authentication) {
-        // Security config already restricts this endpoint to ADMIN role
         try {
-            logger.info("Admin Dashboard accessed by user: {}", authentication.getName());
-            logger.info("User authorities: {}", authentication.getAuthorities());
-            
-            // Get the current user
-            User currentUser = userService.getUserFromToken("Bearer " + jwtUtils.generateToken(authentication.getName()));
-            logger.info("Current user role: {}", currentUser.getRole());
-            
-            // Get statistics for the admin dashboard
-            List<Printer> printers = printerRepository.findByOwner(currentUser);
-            if (printers == null) {
-                printers = java.util.Collections.emptyList();
+            // Verify admin role
+            if (!authentication.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+                return "redirect:/dashboard?error=unauthorized";
             }
             
-            // Count active printers
-            long activePrinters = printers.stream()
-                .filter(p -> p.getStatus() == PrinterStatus.ONLINE)
-                .count();
+            // Get user count
+            long totalUsers = userService.countUsers();
+            model.addAttribute("totalUsers", totalUsers);
             
-            // Get pending jobs - handle null safely
-            List<PrintJob> pendingJobs = new java.util.ArrayList<>();
-            for (Printer printer : printers) {
-                if (printer.getPrintJobs() != null) {
-                    pendingJobs.addAll(printer.getPrintJobs().stream()
-                        .filter(j -> j.getStatus() == PrintJobStatus.PENDING)
-                        .toList());
-                }
-            }
+            // Get active printers count
+            List<Printer> activePrinters = printerRepository.findByStatus(PrinterStatus.ONLINE);
+            model.addAttribute("activePrinters", activePrinters.size());
+            model.addAttribute("printers", printerRepository.findAll());
             
-            // Calculate total revenue and pages printed
-            double totalRevenue = 0.0;
-            int pagesPrinted = 0;
+            // Get jobs completed today
+            long jobsToday = printJobRepository.countByCreatedAtAfter(LocalDateTime.now().toLocalDate().atStartOfDay());
+            model.addAttribute("jobsToday", jobsToday);
             
-            for (Printer printer : printers) {
-                if (printer.getPrintJobs() != null) {
-                    for (PrintJob job : printer.getPrintJobs()) {
-                        if (job.getStatus() == PrintJobStatus.COMPLETED) {
-                            totalRevenue += job.getTotalCost();
-                            pagesPrinted += job.getTotalPages();
-                        }
-                    }
-                }
-            }
-            
-            // Add data to the model
-            model.addAttribute("printers", printers);
-            model.addAttribute("printJobs", pendingJobs);
-            model.addAttribute("activePrinters", activePrinters);
-            model.addAttribute("pendingJobs", pendingJobs.size());
+            // Get total revenue (sum of all completed print jobs)
+            double totalRevenue = printJobRepository.findByStatus(PrintJobStatus.COMPLETED)
+                    .stream()
+                    .mapToDouble(PrintJob::getTotalCost)
+                    .sum();
             model.addAttribute("totalRevenue", totalRevenue);
-            model.addAttribute("pagesPrinted", pagesPrinted);
+            
+            // Get recent users (limit to 5)
+            List<User> recentUsers = userService.getRecentUsers(5);
+            model.addAttribute("recentUsers", recentUsers);
+            
+            // Get recent print jobs (limit to 5)
+            List<PrintJob> recentJobs = printJobRepository.findTop5ByOrderByCreatedAtDesc();
+            model.addAttribute("recentJobs", recentJobs);
+            
             model.addAttribute("activePage", "admin");
-            
-            // Add missing attributes for admin dashboard
-            model.addAttribute("recentUsers", userService.getRecentUsers());
-            model.addAttribute("totalUsers", userService.getTotalUserCount());
-            model.addAttribute("jobsToday", printJobRepository.countTodaysJobs());
-            model.addAttribute("recentJobs", printJobRepository.findRecentJobs());
-            
             return "admin-dashboard";
         } catch (Exception e) {
-            // Log the error
-            logger.error("Error rendering admin dashboard: {}", e.getMessage(), e);
-            return "redirect:/login?error=admin_access_error";
+            return "redirect:/dashboard?error=admin_error";
         }
     }
 
@@ -479,6 +437,128 @@ public class WebController {
             
             redirectAttributes.addAttribute("error", "Failed to add printer: " + e.getMessage());
             return new RedirectView(redirectUrl);
+        }
+    }
+
+    @GetMapping("/admin/users/{id}")
+    public String viewUser(@PathVariable Long id, Model model) {
+        try {
+            // Get the user details
+            User user = userService.getUserById(id);
+            if (user == null) {
+                return "redirect:/admin/users?error=user_not_found";
+            }
+            
+            // Get user's print jobs
+            List<PrintJob> userPrintJobs = printJobRepository.findByUser(user);
+            
+            // Calculate statistics
+            int totalPagesPrinted = userPrintJobs.stream()
+                    .mapToInt(PrintJob::getTotalPages)
+                    .sum();
+                    
+            double totalSpent = userPrintJobs.stream()
+                    .mapToDouble(PrintJob::getTotalCost)
+                    .sum();
+            
+            // Add to model
+            model.addAttribute("user", user);
+            model.addAttribute("userPrintJobs", userPrintJobs);
+            model.addAttribute("totalPagesPrinted", totalPagesPrinted);
+            model.addAttribute("totalSpent", totalSpent);
+            model.addAttribute("activePage", "admin");
+            model.addAttribute("activeAdminSection", "users");
+            
+            return "admin/user-view";
+        } catch (Exception e) {
+            logger.error("Error viewing user: {}", e.getMessage(), e);
+            return "redirect:/admin/users?error=view_error";
+        }
+    }
+    
+    @GetMapping("/admin/users/{id}/edit")
+    public String editUser(@PathVariable Long id, Model model) {
+        try {
+            User user = userService.getUserById(id);
+            if (user == null) {
+                return "redirect:/admin/users?error=user_not_found";
+            }
+            
+            model.addAttribute("user", user);
+            model.addAttribute("activePage", "admin");
+            model.addAttribute("activeAdminSection", "users");
+            
+            return "admin/user-edit";
+        } catch (Exception e) {
+            logger.error("Error loading edit user page: {}", e.getMessage(), e);
+            return "redirect:/admin/users?error=edit_load_error";
+        }
+    }
+    
+    @PostMapping("/admin/users/{id}/update")
+    public String updateUser(@PathVariable Long id, 
+                            @RequestParam String name,
+                            @RequestParam String email,
+                            @RequestParam UserRole role,
+                            @RequestParam boolean active,
+                            @RequestParam(required = false) Double balance,
+                            @RequestParam(required = false) String password,
+                            @RequestParam(required = false, defaultValue = "false") boolean resetPasswordPrompt,
+                            RedirectAttributes redirectAttributes) {
+        try {
+            // Get the user
+            User user = userService.getUserById(id);
+            if (user == null) {
+                redirectAttributes.addFlashAttribute("error", "User not found");
+                return "redirect:/admin/users";
+            }
+            
+            // Update user fields
+            user.setName(name);
+            user.setEmail(email);
+            user.setRole(role);
+            user.setActive(active);
+            
+            if (balance != null) {
+                user.setBalance(balance);
+            }
+            
+            // Update password if provided
+            if (password != null && !password.isEmpty()) {
+                userService.updatePassword(user, password);
+                user.setResetPasswordRequired(resetPasswordPrompt);
+            }
+            
+            // Save updated user
+            userService.saveUser(user);
+            
+            redirectAttributes.addFlashAttribute("success", "User updated successfully");
+            return "redirect:/admin/users/" + id + "/edit";
+            
+        } catch (Exception e) {
+            logger.error("Error updating user: {}", e.getMessage(), e);
+            redirectAttributes.addFlashAttribute("error", "Error updating user: " + e.getMessage());
+            return "redirect:/admin/users/" + id + "/edit";
+        }
+    }
+    
+    @PostMapping("/admin/users/{id}/delete")
+    public String deleteUser(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            // Delete the user
+            boolean deleted = userService.deleteUser(id);
+            
+            if (deleted) {
+                redirectAttributes.addFlashAttribute("success", "User deleted successfully");
+            } else {
+                redirectAttributes.addFlashAttribute("error", "Failed to delete user");
+            }
+            
+            return "redirect:/admin/users";
+        } catch (Exception e) {
+            logger.error("Error deleting user: {}", e.getMessage(), e);
+            redirectAttributes.addFlashAttribute("error", "Error deleting user: " + e.getMessage());
+            return "redirect:/admin/users";
         }
     }
 } 

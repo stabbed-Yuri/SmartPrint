@@ -152,7 +152,7 @@ function updateCostEstimate() {
     const totalCost = totalPages * costPerPage;
 
     document.getElementById('pageCount').textContent = `Total Pages: ${totalPages}`;
-    document.getElementById('costEstimate').textContent = `Estimated Cost: $${totalCost.toFixed(2)}`;
+    document.getElementById('costEstimate').textContent = `Estimated Cost: ৳${totalCost.toFixed(2)}`;
 }
 
 async function submitPrintJob() {
@@ -164,7 +164,6 @@ async function submitPrintJob() {
 
     const printType = document.querySelector('input[name="printType"]:checked').value;
     const pageSize = document.querySelector('input[name="pageSize"]:checked').value;
-    const orientation = document.querySelector('input[name="orientation"]:checked').value;
     const deliveryOption = document.querySelector('input[name="deliveryOption"]:checked').value;
 
     const formData = new FormData();
@@ -175,7 +174,6 @@ async function submitPrintJob() {
     formData.append('printerId', printerId);
     formData.append('printType', printType);
     formData.append('pageSize', pageSize);
-    formData.append('orientation', orientation);
     formData.append('deliveryOption', deliveryOption);
 
     try {

@@ -38,7 +38,7 @@
                         </li>
                         <!-- Only show these nav items if user is logged in -->
                         <li class="nav-item" th:if="${authenticated}">
-                            <a class="nav-link" th:classappend="${activePage == 'dashboard' ? 'active' : ''}" th:href="@{/dashboard}">Dashboard</a>
+                            <a class="nav-link" th:classappend="${activePage == 'printing' ? 'active' : ''}" th:href="@{/printing}">Print Documents</a>
                         </li>
                         <li class="nav-item" th:if="${authenticated}">
                             <a class="nav-link" th:classappend="${activePage == 'printers' ? 'active' : ''}" th:href="@{/printers}">Printers</a>

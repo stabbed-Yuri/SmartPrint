@@ -43,4 +43,13 @@ public class User {
 
     @Column(nullable = false)
     private boolean active = true;
+
+    @Column(name = "created_at")
+    private java.time.LocalDateTime createdAt = java.time.LocalDateTime.now();
+
+    @Column(name = "last_login")
+    private java.time.LocalDateTime lastLogin;
+
+    @Column(name = "reset_password_required", nullable = false)
+    private boolean resetPasswordRequired = false;
 } 

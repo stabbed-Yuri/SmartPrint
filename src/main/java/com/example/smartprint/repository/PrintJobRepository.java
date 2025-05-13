@@ -37,4 +37,17 @@ public interface PrintJobRepository extends JpaRepository<PrintJob, Long> {
      * @return Number of jobs with the given status
      */
     long countByStatus(PrintJobStatus status);
+    
+    /**
+     * Count print jobs created after a specific date/time
+     * @param dateTime The date/time threshold
+     * @return Number of jobs created after the specified date/time
+     */
+    long countByCreatedAtAfter(java.time.LocalDateTime dateTime);
+    
+    /**
+     * Find the top 5 most recent print jobs
+     * @return List of the 5 most recent print jobs
+     */
+    List<PrintJob> findTop5ByOrderByCreatedAtDesc();
 }

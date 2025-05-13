@@ -5,6 +5,7 @@ import com.example.smartprint.repository.PrintJobRepository;
 import com.example.smartprint.repository.UserRepository;
 import com.example.smartprint.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -56,5 +57,57 @@ public class UserService {
      */
     public List<User> getAllUsers() {
         return userRepository.findAll();
+    }
+
+    public long countUsers() {
+        return userRepository.count();
+    }
+    
+    public List<User> getRecentUsers(int limit) {
+        return userRepository.findAll(PageRequest.of(0, limit)).getContent();
+    }
+    
+    /**
+     * Get a user by their ID
+     * @param id The user ID
+     * @return The user object or null if not found
+     */
+    public User getUserById(Long id) {
+        return userRepository.findById(id).orElse(null);
+    }
+    
+    /**
+     * Update a user's password
+     * @param user The user to update
+     * @param newPassword The new password (will be encoded)
+     */
+    public void updatePassword(User user, String newPassword) {
+        // In a real app, you would encode the password first
+        // String encodedPassword = passwordEncoder.encode(newPassword);
+        user.setPassword(newPassword); // For demo, we're not encoding
+        userRepository.save(user);
+    }
+    
+    /**
+     * Save a user to the database
+     * @param user The user to save
+     * @return The saved user
+     */
+    public User saveUser(User user) {
+        return userRepository.save(user);
+    }
+    
+    /**
+     * Delete a user by their ID
+     * @param id The ID of the user to delete
+     * @return true if deleted, false otherwise
+     */
+    public boolean deleteUser(Long id) {
+        try {
+            userRepository.deleteById(id);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

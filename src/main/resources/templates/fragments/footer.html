@@ -74,23 +74,23 @@
         </div>
     </footer>
     
-    <!-- A simplified footer that some pages might want to use -->
-    <footer th:fragment="standard-footer" class="bg-light py-3 mt-auto">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-6">
-                    <p class="mb-0">&copy; <span th:text="${#dates.format(#dates.createNow(), 'yyyy')}">2024</span> SmartPrint. All rights reserved.</p>
-                </div>
-                <div class="col-md-6 text-md-end">
-                    <a th:href="@{/}" class="text-decoration-none text-secondary me-3">Home</a>
-                    <a th:href="@{/dashboard}" class="text-decoration-none text-secondary me-3">Dashboard</a>
-                    <a th:href="@{/printers}" class="text-decoration-none text-secondary me-3">Printers</a>
-                    <a th:href="@{/profile}" class="text-decoration-none text-secondary">Profile</a>
-                </div>
-            </div>
-        </div>
-    </footer>
-    
+<!--    &lt;!&ndash; A simplified footer that some pages might want to use &ndash;&gt;-->
+<!--    <footer th:fragment="standard-footer" class="bg-light py-3 mt-auto">-->
+<!--        <div class="container">-->
+<!--            <div class="row">-->
+<!--                <div class="col-md-6">-->
+<!--                    <p class="mb-0">&copy; <span th:text="${#dates.format(#dates.createNow(), 'yyyy')}">2024</span> SmartPrint. All rights reserved.</p>-->
+<!--                </div>-->
+<!--                <div class="col-md-6 text-md-end">-->
+<!--                    <a th:href="@{/}" class="text-decoration-none text-secondary me-3">Home</a>-->
+<!--                    <a th:href="@{/dashboard}" class="text-decoration-none text-secondary me-3">Dashboard</a>-->
+<!--                    <a th:href="@{/printers}" class="text-decoration-none text-secondary me-3">Printers</a>-->
+<!--                    <a th:href="@{/profile}" class="text-decoration-none text-secondary">Profile</a>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </footer>-->
+<!--    -->
     <!-- Modal styles fragment -->
     <style th:fragment="modal-styles">
         .modal-backdrop {

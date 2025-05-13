@@ -23,11 +23,19 @@
             <nav>
                 <ul class="main-menu">
                     <li><a th:href="@{/}" th:classappend="${activePage == 'home' ? 'active' : ''}">Home</a></li>
-                    <li><a th:href="@{/dashboard}" th:classappend="${activePage == 'dashboard' ? 'active' : ''}">Dashboard</a></li>
                     <li><a th:href="@{/printers}" th:classappend="${activePage == 'printers' ? 'active' : ''}">Printers</a></li>
                     <li><a th:href="@{/jobs}" th:classappend="${activePage == 'jobs' ? 'active' : ''}">Print Jobs</a></li>
                     <li><a th:href="@{/profile}" th:classappend="${activePage == 'profile' ? 'active' : ''}">Profile</a></li>
                     <li><a th:href="@{/admin}" th:classappend="${activePage == 'admin' ? 'active' : ''}">Admin</a></li>
+                    
+                    <!-- User Info - Only shown when logged in -->
+                    <li class="user-info" th:if="${#authentication != null && #authentication.authenticated && !#strings.equals(#authentication.name, 'anonymousUser')}">
+                        <span>
+                            <span th:text="${#authentication.name}">admin@example.com</span>
+                            <span class="user-role" th:if="${#authentication.authorities[0] != null}"
+                                  th:text="${#authentication.authorities[0].authority}">ROLE_ADMIN</span>
+                        </span>
+                    </li>
                     
                     <!-- Login/Logout Buttons -->
                     <li th:if="${#authentication != null && #authentication.authenticated && !#strings.equals(#authentication.name, 'anonymousUser')}">
@@ -85,15 +93,15 @@
                 </div>
                 <div class="stats-card">
                     <h3>Online Printers</h3>
-                    <p class="stats-number" th:text="${printers.?[status == T(com.example.smartprint.model.PrinterStatus).ONLINE].size()}">18</p>
+                    <p class="stats-number" th:text="${printers.?[status.name() == 'ONLINE'].size()}">18</p>
                 </div>
                 <div class="stats-card">
                     <h3>Offline Printers</h3>
-                    <p class="stats-number" th:text="${printers.?[status == T(com.example.smartprint.model.PrinterStatus).OFFLINE].size()}">4</p>
+                    <p class="stats-number" th:text="${printers.?[status.name() == 'OFFLINE'].size()}">4</p>
                 </div>
                 <div class="stats-card">
                     <h3>Maintenance Mode</h3>
-                    <p class="stats-number" th:text="${printers.?[status == T(com.example.smartprint.model.PrinterStatus).MAINTENANCE].size()}">3</p>
+                    <p class="stats-number" th:text="${printers.?[status.name() == 'MAINTENANCE'].size()}">3</p>
                 </div>
             </section>
 
@@ -123,7 +131,7 @@
                 <div class="printer-card" th:each="printer : ${printers}">
                     <div class="printer-header">
                         <h3 th:text="${printer.name}">Library Printer</h3>
-                        <span class="printer-status" th:classappend="${printer.status.toString().toLowerCase()}" 
+                        <span class="printer-status" th:classappend="${printer.status.name().toLowerCase()}" 
                              th:text="${printer.status}">ONLINE</span>
                     </div>
                     <div class="printer-details">
@@ -139,13 +147,13 @@
                         <a th:href="@{/admin/printers/{id}/edit(id=${printer.id})}" class="btn btn-small btn-warning">
                             <i class="fas fa-edit"></i> Edit
                         </a>
-                        <button th:if="${printer.status.toString() == 'ONLINE'}" 
+                        <button th:if="${printer.status.name() == 'ONLINE'}" 
                                 class="btn btn-small btn-secondary printer-toggle-btn" 
                                 th:data-printer-id="${printer.id}" 
                                 th:data-action="offline">
                             <i class="fas fa-power-off"></i> Set Offline
                         </button>
-                        <button th:unless="${printer.status.toString() == 'ONLINE'}" 
+                        <button th:unless="${printer.status.name() == 'ONLINE'}" 
                                 class="btn btn-small btn-success printer-toggle-btn" 
                                 th:data-printer-id="${printer.id}" 
                                 th:data-action="online">

@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         .user-info {
             display: flex;
@@ -44,7 +44,6 @@
             <nav>
                 <ul class="main-menu">
                     <li><a th:href="@{/}" th:classappend="${activePage == 'home' ? 'active' : ''}">Home</a></li>
-                    <li><a th:href="@{/dashboard}" th:classappend="${activePage == 'dashboard' ? 'active' : ''}">Dashboard</a></li>
                     <li><a th:href="@{/printers}" th:classappend="${activePage == 'printers' ? 'active' : ''}">Printers</a></li>
                     <li><a th:href="@{/jobs}" th:classappend="${activePage == 'jobs' ? 'active' : ''}">Print Jobs</a></li>
                     <li><a th:href="@{/profile}" th:classappend="${activePage == 'profile' ? 'active' : ''}">Profile</a></li>
@@ -77,7 +76,6 @@
         <div class="mobile-menu">
             <ul>
                 <li><a th:href="@{/}" th:classappend="${activePage == 'home' ? 'active' : ''}">Home</a></li>
-                <li><a th:href="@{/dashboard}" th:classappend="${activePage == 'dashboard' ? 'active' : ''}">Dashboard</a></li>
                 <li><a th:href="@{/printers}" th:classappend="${activePage == 'printers' ? 'active' : ''}">Printers</a></li>
                 <li><a th:href="@{/jobs}" th:classappend="${activePage == 'jobs' ? 'active' : ''}">Print Jobs</a></li>
                 <li><a th:href="@{/profile}" th:classappend="${activePage == 'profile' ? 'active' : ''}">Profile</a></li>
@@ -196,25 +194,61 @@
                                     <th>Location</th>
                                     <th>Status</th>
                                     <th>Jobs Queue</th>
+                                    <th>B&W Rate</th>
+                                    <th>Color Rate</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr th:if="${printers.empty}">
-                                    <td colspan="6">No printers found</td>
+                                    <td colspan="8">No printers found</td>
                                 </tr>
                                 <tr th:each="printer : ${printers}">
                                     <td th:text="${printer.id}">1</td>
-                                    <td th:text="${printer.name}">Library Printer</td>
-                                    <td th:text="${printer.location}">Main Library</td>
-                                    <td><span class="status-badge" th:classappend="${printer.status.toString().toLowerCase()}" th:text="${printer.status}">ONLINE</span></td>
-                                    <td th:text="${printer.queuedJobs}">3</td>
+                                    <td th:text="${printer.name}">HP LaserJet</td>
+                                    <td th:text="${printer.location}">Library</td>
+                                    <td><span class="status-badge" th:classappend="${printer.status.name() == 'ONLINE' ? 'active' : 'inactive'}" th:text="${printer.status}">ONLINE</span></td>
+                                    <td th:text="${printer.queueLength}">3</td>
+                                    <td th:text="${'$' + printer.blackAndWhiteRate}">$0.10</td>
+                                    <td th:text="${'$' + printer.colorRate}">$0.25</td>
                                     <td>
-                                        <a th:href="@{/admin/printers/{id}(id=${printer.id})}" class="btn btn-small btn-info">Manage</a>
+                                        <a th:href="@{/admin/printers/{id}(id=${printer.id})}" class="btn btn-small btn-info">View</a>
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+                </div>
+
+                <!-- Add New Printer Form -->
+                <div class="panel add-printer-panel">
+                    <div class="panel-header">
+                        <h2>Add New Printer</h2>
+                    </div>
+                    <div class="panel-body">
+                        <form th:action="@{/printers/new}" method="post">
+                            <div class="form-group">
+                                <label for="name">Printer Name</label>
+                                <input type="text" id="name" name="name" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="location">Location</label>
+                                <input type="text" id="location" name="location" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="blackAndWhiteRate">Black & White Rate (per page)</label>
+                                <input type="number" id="blackAndWhiteRate" name="blackAndWhiteRate" class="form-control" step="0.01" min="0" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="colorRate">Color Rate (per page)</label>
+                                <input type="number" id="colorRate" name="colorRate" class="form-control" step="0.01" min="0" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="ipAddress">IP Address</label>
+                                <input type="text" id="ipAddress" name="ipAddress" class="form-control" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Printer</button>
+                        </form>
                     </div>
                 </div>
 
@@ -229,24 +263,30 @@
                                 <tr>
                                     <th>ID</th>
                                     <th>User</th>
-                                    <th>Document</th>
                                     <th>Printer</th>
+                                    <th>Document</th>
+                                    <th>Pages</th>
+                                    <th>Cost</th>
                                     <th>Status</th>
+                                    <th>Date</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr th:if="${recentJobs.empty}">
-                                    <td colspan="6">No recent jobs found</td>
+                                    <td colspan="9">No print jobs found</td>
                                 </tr>
                                 <tr th:each="job : ${recentJobs}">
                                     <td th:text="${job.id}">1</td>
-                                    <td th:text="${job.user.name}">John Doe</td>
+                                    <td th:text="${job.user != null ? job.user.email : 'Unknown'}">user@example.com</td>
+                                    <td th:text="${job.printer != null ? job.printer.name : 'Unknown'}">Library Printer</td>
                                     <td th:text="${job.documentName}">Assignment.pdf</td>
-                                    <td th:text="${job.printer.name}">Library Printer</td>
-                                    <td><span class="status-badge" th:classappend="${job.status.toString().toLowerCase()}" th:text="${job.status}">PENDING</span></td>
+                                    <td th:text="${job.totalPages}">5</td>
+                                    <td th:text="${'$' + #numbers.formatDecimal(job.totalCost, 1, 2)}">$1.25</td>
+                                    <td><span class="status-badge" th:classappend="${job.status.name() == 'COMPLETED' ? 'active' : (job.status.name() == 'PENDING' ? 'pending' : 'inactive')}" th:text="${job.status}">PENDING</span></td>
+                                    <td th:text="${#temporals.format(job.createdAt, 'yyyy-MM-dd HH:mm')}">2023-06-15 14:30</td>
                                     <td>
-                                        <a th:href="@{/admin/jobs/{id}(id=${job.id})}" class="btn btn-small btn-info">Details</a>
+                                        <a th:href="@{/admin/jobs/{id}(id=${job.id})}" class="btn btn-small btn-info">View</a>
                                     </td>
                                 </tr>
                             </tbody>

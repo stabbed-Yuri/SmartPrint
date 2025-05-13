@@ -35,7 +35,7 @@ public class PrintJob {
     @Enumerated(EnumType.STRING)
     private PageSize pageSize;
 
-    @Column(nullable = false)
+    @Column
     @Enumerated(EnumType.STRING)
     private Orientation orientation;
 

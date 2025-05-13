@@ -42,7 +42,7 @@ function updateProfileUI(profile) {
             <p><strong>Date:</strong> ${new Date(job.date).toLocaleDateString()}</p>
             <p><strong>Document:</strong> ${job.documentName}</p>
             <p><strong>Pages:</strong> ${job.pageCount}</p>
-            <p><strong>Cost:</strong> $${job.cost.toFixed(2)}</p>
+            <p><strong>Cost:</strong> ৳${job.cost.toFixed(2)}</p>
             <p><strong>Status:</strong> ${job.status}</p>
         `;
         historyContainer.appendChild(jobElement);
@@ -52,7 +52,7 @@ function updateProfileUI(profile) {
     const paymentContainer = document.getElementById('paymentInfo');
     paymentContainer.innerHTML = `
         <p><strong>Payment Method:</strong> ${profile.paymentMethod || 'Not set'}</p>
-        <p><strong>Balance:</strong> $${profile.balance.toFixed(2)}</p>
+        <p><strong>Balance:</strong> ৳${profile.balance.toFixed(2)}</p>
     `;
 }
 

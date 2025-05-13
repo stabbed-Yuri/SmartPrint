@@ -29,6 +29,15 @@
                     <li><a th:href="@{/profile}" th:classappend="${activePage == 'profile' ? 'active' : ''}">Profile</a></li>
                     <li><a th:href="@{/admin}" th:classappend="${activePage == 'admin' ? 'active' : ''}">Admin</a></li>
                     
+                    <!-- User Info - Only shown when logged in -->
+                    <li class="user-info" th:if="${#authentication != null && #authentication.authenticated && !#strings.equals(#authentication.name, 'anonymousUser')}">
+                        <span>
+                            <span th:text="${#authentication.name}">admin@example.com</span>
+                            <span class="user-role" th:if="${#authentication.authorities[0] != null}"
+                                  th:text="${#authentication.authorities[0].authority}">ROLE_ADMIN</span>
+                        </span>
+                    </li>
+                    
                     <!-- Login/Logout Buttons -->
                     <li th:if="${#authentication != null && #authentication.authenticated && !#strings.equals(#authentication.name, 'anonymousUser')}">
                         <a th:href="@{/logout}" class="btn btn-secondary">Logout</a>
