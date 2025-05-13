@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Print Documents - SmartPrint</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <style>
+        .dropzone {
+            border: 2px dashed #0087F7;
+            border-radius: 5px;
+            background: #f8f9fa;
+            min-height: 150px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .dropzone.highlight {
+            background: #e3f2fd;
+            border-color: #2196F3;
+        }
+        
+        .file-list {
+            margin-top: 20px;
+            width: 100%;
+        }
+        
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid #ddd;
+            margin-bottom: 5px;
+            border-radius: 4px;
+        }
+        
+        .file-item .file-name {
+            flex-grow: 1;
+            margin-left: 10px;
+        }
+        
+        .file-item .file-remove {
+            color: #dc3545;
+            cursor: pointer;
+        }
+        
+        .cost-summary {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .cost-summary table {
+            width: 100%;
+        }
+        
+        .cost-summary td {
+            padding: 5px 0;
+        }
+        
+        .cost-summary .total {
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        /* Fix for form elements */
+        .form-control {
+            display: block;
+            width: 100%;
+            padding: 0.375rem 0.75rem;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+            color: #212529;
+            background-color: #fff;
+            background-clip: padding-box;
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        
+        .form-check {
+            display: block;
+            min-height: 1.5rem;
+            padding-left: 1.5em;
+            margin-bottom: 0.125rem;
+        }
+        
+        .form-check-input {
+            width: 1em;
+            height: 1em;
+            margin-top: 0.25em;
+            vertical-align: top;
+            background-color: #fff;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+            border: 1px solid rgba(0, 0, 0, 0.25);
+            appearance: none;
+        }
+        
+        .form-check-label {
+            margin-left: 0.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .mb-3 {
+            margin-bottom: 1rem !important;
+        }
+        
+        .mb-4 {
+            margin-bottom: 1.5rem !important;
+        }
+        
+        .mt-4 {
+            margin-top: 1.5rem !important;
+        }
+        
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-right: -15px;
+            margin-left: -15px;
+        }
+        
+        .col-md-12 {
+            flex: 0 0 100%;
+            max-width: 100%;
+            padding-right: 15px;
+            padding-left: 15px;
+        }
+        
+        .card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            word-wrap: break-word;
+            background-color: #fff;
+            background-clip: border-box;
+            border: 1px solid rgba(0, 0, 0, 0.125);
+            border-radius: 0.25rem;
+        }
+        
+        .card-body {
+            flex: 1 1 auto;
+            padding: 1.25rem;
+        }
+        
+        .card-title {
+            margin-bottom: 0.75rem;
+            font-size: 1.25rem;
+        }
+        
+        .card-text {
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div th:replace="fragments/header :: header"></div>
+
+    <!-- Main Content -->
+    <main class="container mt-4">
+        <div class="row">
+            <div class="col-md-12">
+                <h1 class="mb-4">Print Documents</h1>
+                
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Upload PDF Files</h5>
+                        <p class="card-text">Drag and drop your PDF files below or click to select files.</p>
+                        
+                        <form id="printForm" th:action="@{/api/print}" method="post" enctype="multipart/form-data">
+                            <!-- Dropzone for file upload -->
+                            <div id="dropzone" class="dropzone mb-3">
+                                <i class="fas fa-cloud-upload-alt fa-3x mb-2"></i>
+                                <p>Drag &amp; Drop PDF files here or click to select</p>
+                                <input type="file" id="fileInput" name="files" multiple accept="application/pdf" class="hidden">
+                            </div>
+                            
+                            <!-- File list -->
+                            <div id="fileList" class="file-list mb-4"></div>
+                            
+                            <!-- Printer selection -->
+                            <div class="form-group mb-3">
+                                <label for="printerId">Select Printer</label>
+                                <select class="form-control" id="printerId" name="printerId" required>
+                                    <option value="">-- Select a printer --</option>
+                                    <option th:each="printer : ${printers}" 
+                                            th:value="${printer.id}" 
+                                            th:text="${printer.name + ' (' + printer.location + ')'}"></option>
+                                </select>
+                            </div>
+                            
+                            <!-- Print type -->
+                            <div class="form-group mb-3">
+                                <label>Print Type</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="printType" id="blackAndWhite" value="BLACK_AND_WHITE" checked>
+                                    <label class="form-check-label" for="blackAndWhite">
+                                        Black & White
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="printType" id="color" value="COLOR">
+                                    <label class="form-check-label" for="color">
+                                        Color
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- Delivery option -->
+                            <div class="form-group mb-3">
+                                <label for="deliveryOption">Delivery Option</label>
+                                <select class="form-control" id="deliveryOption" name="deliveryOption" required>
+                                    <option value="PICKUP">Pickup</option>
+                                    <option value="DELIVERY">Delivery</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Cost summary -->
+                            <div id="costSummary" class="cost-summary mb-4 hidden">
+                                <h6>Print Job Summary</h6>
+                                <table>
+                                    <tr>
+                                        <td>Total Pages:</td>
+                                        <td id="totalPages">0</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Price per Page:</td>
+                                        <td id="pricePerPage">৳0.00</td>
+                                    </tr>
+                                    <tr class="total">
+                                        <td>Total Cost:</td>
+                                        <td id="totalCost">৳0.00</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary" id="submitBtn" disabled>Submit Print Job</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <div th:replace="fragments/footer :: footer"></div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropzone = document.getElementById('dropzone');
+            const fileInput = document.getElementById('fileInput');
+            const fileList = document.getElementById('fileList');
+            const printerSelect = document.getElementById('printerId');
+            const printTypeRadios = document.getElementsByName('printType');
+            const submitBtn = document.getElementById('submitBtn');
+            const costSummary = document.getElementById('costSummary');
+            const totalPagesElement = document.getElementById('totalPages');
+            const pricePerPageElement = document.getElementById('pricePerPage');
+            const totalCostElement = document.getElementById('totalCost');
+            
+            // Files array to store the selected files
+            let selectedFiles = [];
+            
+            // Drag and drop events
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropzone.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropzone.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropzone.addEventListener(eventName, unhighlight, false);
+            });
+            
+            function highlight() {
+                dropzone.classList.add('highlight');
+            }
+            
+            function unhighlight() {
+                dropzone.classList.remove('highlight');
+            }
+            
+            // Handle file drop
+            dropzone.addEventListener('drop', handleDrop, false);
+            
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                handleFiles(files);
+            }
+            
+            // Handle file selection via click
+            dropzone.addEventListener('click', function() {
+                fileInput.click();
+            });
+            
+            fileInput.addEventListener('change', function() {
+                handleFiles(this.files);
+            });
+            
+            function handleFiles(files) {
+                // Filter only PDF files
+                const pdfFiles = Array.from(files).filter(file => file.type === 'application/pdf');
+                
+                if (pdfFiles.length === 0) {
+                    alert('Please select only PDF files.');
+                    return;
+                }
+                
+                // Add to selected files array
+                pdfFiles.forEach(file => {
+                    if (!selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                        selectedFiles.push(file);
+                    }
+                });
+                
+                // Update UI
+                updateFileList();
+                checkFormValidity();
+                
+                // Calculate cost if printer is selected
+                if (printerSelect.value) {
+                    calculateCost();
+                }
+            }
+            
+            function updateFileList() {
+                fileList.innerHTML = '';
+                
+                selectedFiles.forEach((file, index) => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    
+                    const fileIcon = document.createElement('i');
+                    fileIcon.className = 'fas fa-file-pdf';
+                    
+                    const fileName = document.createElement('span');
+                    fileName.className = 'file-name';
+                    fileName.textContent = file.name;
+                    
+                    const fileRemove = document.createElement('i');
+                    fileRemove.className = 'fas fa-times file-remove';
+                    fileRemove.addEventListener('click', function() {
+                        selectedFiles.splice(index, 1);
+                        updateFileList();
+                        checkFormValidity();
+                        if (printerSelect.value) {
+                            calculateCost();
+                        }
+                    });
+                    
+                    fileItem.appendChild(fileIcon);
+                    fileItem.appendChild(fileName);
+                    fileItem.appendChild(fileRemove);
+                    fileList.appendChild(fileItem);
+                });
+            }
+            
+            // Check form validity
+            function checkFormValidity() {
+                submitBtn.disabled = selectedFiles.length === 0 || !printerSelect.value;
+            }
+            
+            // Calculate cost when printer or print type changes
+            printerSelect.addEventListener('change', function() {
+                checkFormValidity();
+                if (selectedFiles.length > 0 && this.value) {
+                    calculateCost();
+                } else {
+                    costSummary.classList.add('hidden');
+                }
+            });
+            
+            for (let radio of printTypeRadios) {
+                radio.addEventListener('change', function() {
+                    if (selectedFiles.length > 0 && printerSelect.value) {
+                        calculateCost();
+                    }
+                });
+            }
+            
+            // Calculate cost function
+            function calculateCost() {
+                const formData = new FormData();
+                selectedFiles.forEach(file => formData.append('files', file));
+                formData.append('printerId', printerSelect.value);
+                
+                // Get selected print type
+                let printType = 'BLACK_AND_WHITE';
+                for (let radio of printTypeRadios) {
+                    if (radio.checked) {
+                        printType = radio.value;
+                        break;
+                    }
+                }
+                formData.append('printType', printType);
+                
+                fetch('/api/print/calculate', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.totalPages) {
+                        totalPagesElement.textContent = data.totalPages;
+                        pricePerPageElement.textContent = '৳' + data.pageRate.toFixed(2);
+                        totalCostElement.textContent = '৳' + data.totalCost.toFixed(2);
+                        costSummary.classList.remove('hidden');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error calculating cost:', error);
+                    alert('Error calculating print cost. Please try again.');
+                });
+            }
+            
+            // Handle form submission
+            document.getElementById('printForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                
+                // Clear existing files and add from our array
+                for (let i = 0; i < this.elements.namedItem('files').files.length; i++) {
+                    formData.delete('files');
+                }
+                
+                selectedFiles.forEach(file => formData.append('files', file));
+                
+                fetch(this.action, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.id) {
+                        // Success - redirect to dashboard
+                        window.location.href = '/dashboard?success=print_job_submitted';
+                    } else {
+                        alert('Error: ' + (data.message || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error submitting print job:', error);
+                    alert('Error submitting print job. Please try again.');
+                });
+            });
+        });
+    </script>
+</body>
+</html> 
