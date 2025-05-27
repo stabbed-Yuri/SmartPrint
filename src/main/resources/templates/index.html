@@ -1,238 +1,184 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
-<head th:replace="~{fragments/layout :: head('Home', ~{})}">
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home - SmartPrint</title>
+    
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="/css/custom.css">
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/images/favicon.png">
 </head>
+<body class="layout">
+    <!-- Header -->
+    <header class="site-header">
+        <nav class="navbar">
+            <div class="container">
+                <a class="brand" href="/">
+                    <i class="fas fa-print"></i> SmartPrint
+                </a>
+                <button class="nav-toggle" id="navToggle">☰</button>
+           
+                <div class="auth-links">
+                    <!-- If NOT logged in -->
+                    <a href="/login" class="btn-outline" th:if="${authentication == null}">Login</a>
+                    <a href="/signup" class="btn-primary" th:if="${authentication == null}">Sign Up</a>
+                    <!-- If logged in -->
+                    <a href="/profile" class="btn-outline" th:if="${authentication != null}">Profile</a>
+                    <a href="/printing" class="btn-outline" th:if="${authentication != null}">Printing</a>
+                    <a href="/admin" class="btn-primary" th:if="${authentication != null and authentication.authorities.?[authority == 'ROLE_ADMIN'].size() > 0}">Admin</a>
+                    <a href="/logout" class="btn-outline" th:if="${authentication != null}">Logout</a>
+                </div>
+            </div>
+        </nav>
+    </header>
 
-<body th:replace="~{fragments/layout :: main-layout('Home', ~{::content}, ~{::custom-styles}, ~{::custom-scripts})}">
-    <!-- Custom styles -->
-    <th:block th:fragment="custom-styles">
-        <style>
-            .hero-section {
-                background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('/images/hero-bg.jpg');
-                background-size: cover;
-                background-position: center;
-                color: white;
-                padding: 100px 0;
-                text-align: center;
-            }
-            
-            .feature-icon {
-                width: 60px;
-                height: 60px;
-                border-radius: 50%;
-            }
-        </style>
-    </th:block>
-    
     <!-- Main Content -->
-    <th:block th:fragment="content">
-        <!-- Hero Section -->
-        <section class="hero-section mb-5">
+    <main>
+        <!-- Hero -->
+        <section class="hero">
+            <div class="container text-center">
+                <h1>Smart Printing for Modern Campuses</h1>
+                <p class="lead">Print your documents from anywhere on campus with ease and efficiency.</p>
+                <div class="hero-buttons">
+                    <a href="/signup" class="btn-primary large">Get Started</a>
+                    <a href="#available-printers" class="btn-outline large">View Printers</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats -->
+        <section class="stats">
+            <div class="container stats-grid">
+                <div class="stat-item">
+                    <i class="fas fa-print icon"></i>
+                    <h3>1</h3>
+                    <p>Available Printers</p>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-map-marker-alt icon"></i>
+                    <h3>0</h3>
+                    <p>Active Locations</p>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-file-alt icon"></i>
+                    <h3>1000+</h3>
+                    <p>Daily Prints</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features -->
+        <section class="features">
             <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-lg-8">
-                        <h1 class="display-4 fw-bold mb-4">Smart Printing for Modern Campuses</h1>
-                        <p class="lead mb-4">Print your documents from anywhere on campus with ease and efficiency.</p>
-                        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-                            <a th:href="@{/signup}" class="btn btn-primary btn-lg px-4 gap-3">Get Started</a>
-                            <a href="#available-printers" class="btn btn-outline-light btn-lg px-4">View Printers</a>
-                        </div>
+                <h2 class="section-title text-center">Why Choose SmartPrint?</h2>
+                <p class="section-lead text-center">The smartest way to manage your printing needs</p>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <i class="fas fa-bolt icon-card"></i>
+                        <h4>Fast & Efficient</h4>
+                        <p>Upload your documents online and pick them up when they're ready.</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-money-bill-wave icon-card"></i>
+                        <h4>Cost Effective</h4>
+                        <p>Find the best prices with our transparent pricing system.</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-map-marked-alt icon-card"></i>
+                        <h4>Multiple Locations</h4>
+                        <p>Choose from various printer locations across campus.</p>
                     </div>
                 </div>
             </div>
         </section>
-        
-        <!-- Stats Section -->
-        <section class="py-5 bg-light">
+
+        <!-- Available Printers -->
+        <section id="available-printers" class="printers">
             <div class="container">
-                <div class="row g-4 text-center">
-                    <div class="col-md-4">
-                        <div class="py-4">
-                            <div class="display-5 fw-bold text-primary mb-3">
-                                <i class="fas fa-print"></i>
-                            </div>
-                            <h3 class="fw-bold" th:text="${printerCount}">12</h3>
-                            <p class="text-muted">Available Printers</p>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="py-4">
-                            <div class="display-5 fw-bold text-primary mb-3">
-                                <i class="fas fa-map-marker-alt"></i>
-                            </div>
-                            <h3 class="fw-bold" th:text="${activePrinters}">5</h3>
-                            <p class="text-muted">Active Locations</p>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="py-4">
-                            <div class="display-5 fw-bold text-primary mb-3">
-                                <i class="fas fa-file-alt"></i>
-                            </div>
-                            <h3 class="fw-bold">1000+</h3>
-                            <p class="text-muted">Daily Prints</p>
-                        </div>
-                    </div>
+                <div class="printers-header">
+                    <h2>Available Printers</h2>
+                    <select id="locationFilter">
+                        <option value="all">All Locations</option>
+                        <option value="421">421</option>
+                    </select>
+                </div>
+                <div class="printer-list">
+                    <p class="no-printers">No printers are currently available. Please check back later.</p>
+                </div>
+                <div class="view-all">
+                    <a href="/printers" class="btn-outline">View All Printers</a>
                 </div>
             </div>
         </section>
-        
-        <!-- Features Section -->
-        <section class="py-5">
-            <div class="container">
-                <div class="row justify-content-center mb-5">
-                    <div class="col-lg-6 text-center">
-                        <h2 class="fw-bold">Why Choose SmartPrint?</h2>
-                        <p class="lead text-muted">The smartest way to manage your printing needs</p>
-                    </div>
-                </div>
-                
-                <div class="row g-4">
-                    <div class="col-md-4">
-                        <div class="card h-100 border-0 shadow-sm">
-                            <div class="card-body text-center p-4">
-                                <div class="feature-icon bg-primary-subtle text-primary mx-auto mb-4 d-flex align-items-center justify-content-center">
-                                    <i class="fas fa-bolt fa-lg"></i>
-                                </div>
-                                <h4>Fast & Efficient</h4>
-                                <p class="text-muted">Upload your documents online and pick them up when they're ready.</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-4">
-                        <div class="card h-100 border-0 shadow-sm">
-                            <div class="card-body text-center p-4">
-                                <div class="feature-icon bg-primary-subtle text-primary mx-auto mb-4 d-flex align-items-center justify-content-center">
-                                    <i class="fas fa-money-bill-wave fa-lg"></i>
-                                </div>
-                                <h4>Cost Effective</h4>
-                                <p class="text-muted">Find the best prices with our transparent pricing system.</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-4">
-                        <div class="card h-100 border-0 shadow-sm">
-                            <div class="card-body text-center p-4">
-                                <div class="feature-icon bg-primary-subtle text-primary mx-auto mb-4 d-flex align-items-center justify-content-center">
-                                    <i class="fas fa-map-marked-alt fa-lg"></i>
-                                </div>
-                                <h4>Multiple Locations</h4>
-                                <p class="text-muted">Choose from various printer locations across campus.</p>
-                            </div>
-                        </div>
-                    </div>
+
+        <!-- Call to Action -->
+        <section class="cta">
+            <div class="container text-center">
+                <h2>Ready to Print?</h2>
+                <p>Just upload your files and choose a printer near you</p>
+                <div class="hero-buttons">
+                    <a href="/login" class="btn-primary large">Login</a>
+                    <a href="/signup" class="btn-outline large">Sign Up</a>
                 </div>
             </div>
         </section>
-        
-        <!-- Available Printers Section -->
-        <section id="available-printers" class="py-5 bg-light">
-            <div class="container">
-                <div class="row justify-content-between align-items-center mb-4">
-                    <div class="col-lg-6">
-                        <h2 class="fw-bold">Available Printers</h2>
-                        <p class="text-muted">Find a printer near you</p>
-                    </div>
-                    <div class="col-lg-4">
-                        <div class="d-flex gap-2">
-                            <select class="form-select" id="location-filter" aria-label="Filter by location">
-                                <option value="all">All Locations</option>
-                                <option th:each="location : ${locations}" th:value="${location}" th:text="${location}"></option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="row g-4">
-                    <div th:if="${#lists.isEmpty(printers)}" class="col-12">
-                        <div class="alert alert-info" role="alert">
-                            <i class="fas fa-info-circle me-2"></i>
-                            No printers are currently available. Please check back later.
-                        </div>
-                    </div>
-                    
-                    <div th:each="printer : ${printers}" class="col-md-6 col-lg-4">
-                        <div class="card h-100 border-0 shadow-sm">
-                            <div class="card-body p-4">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h5 class="mb-0" th:text="${printer.name}">HP LaserJet Pro</h5>
-                                    <span th:if="${printer.status != null && printer.status.name() == 'ONLINE'}" class="badge bg-success-subtle text-success">Online</span>
-                                    <span th:unless="${printer.status != null && printer.status.name() == 'ONLINE'}" class="badge bg-danger-subtle text-danger">Offline</span>
-                                </div>
-                                
-                                <p class="text-muted mb-3">
-                                    <i class="fas fa-map-marker-alt me-2"></i>
-                                    <span th:text="${printer.location}">Library</span>
-                                </p>
-                                
-                                <p class="text-muted mb-3">
-                                    <i class="fas fa-user me-2"></i>
-                                    <span th:text="${printer.owner?.name}">Library Staff</span>
-                                </p>
-                                
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <div>
-                                        <span class="d-block small text-muted">Price per page</span>
-                                        <span class="fw-bold">$<span th:text="${printer.blackAndWhiteRate}">2.00</span></span>
-                                    </div>
-                                    <div>
-                                        <span class="d-block small text-muted">Color pages</span>
-                                        <span class="fw-bold">$<span th:text="${printer.colorRate}">3.50</span></span>
-                                    </div>
-                                </div>
-                                
-                                <a th:href="@{/print?printer={id}(id=${printer.id})}" class="btn btn-primary w-100">
-                                    <i class="fas fa-print me-2"></i> Print Here
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="row mt-4">
-                    <div class="col-12 text-center">
-                        <a th:href="@{/printers}" class="btn btn-outline-primary">View All Printers</a>
-                    </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="container footer-grid">
+            <div>
+                <h5>SmartPrint</h5>
+                <p>Smart printing solution for students and professionals.</p>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-linkedin-in"></i></a>
                 </div>
             </div>
-        </section>
-        
-        <!-- File Upload Section -->
-        <section class="py-5">
-            <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-lg-8 text-center">
-                        <h2 class="fw-bold mb-4">Ready to Print?</h2>
-                        <p class="lead text-muted mb-5">Just upload your files and choose a printer near you</p>
-                        
-                        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-                            <a th:href="@{/login}" class="btn btn-primary btn-lg px-4 gap-3">Login</a>
-                            <a th:href="@{/signup}" class="btn btn-outline-primary btn-lg px-4">Sign Up</a>
-                        </div>
-                    </div>
-                </div>
+            <div>
+                <h6>Quick Links</h6>
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/dashboard">Dashboard</a></li>
+                    <li><a href="/printers">Printers</a></li>
+                    <li><a href="/jobs">Print Jobs</a></li>
+                </ul>
             </div>
-        </section>
-    </th:block>
-    
-    <!-- Custom scripts -->
-    <th:block th:fragment="custom-scripts">
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                // Location filter functionality
-                const locationFilter = document.getElementById('location-filter');
-                if (locationFilter) {
-                    locationFilter.addEventListener('change', function() {
-                        const location = this.value;
-                        // Implementation would filter the printer cards
-                        console.log(`Filter by location: ${location}`);
-                    });
-                }
-            });
-        </script>
-    </th:block>
+            <div>
+                <h6>Help & Support</h6>
+                <ul>
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="#">Contact Us</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                </ul>
+            </div>
+            <div>
+                <h6>Account</h6>
+                <ul>
+                    <li><a href="/profile">My Profile</a></li>
+                    <li><a href="/settings">Settings</a></li>
+                    <li><a href="/login">Login</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 SmartPrint. All rights reserved.</p>
+            <p>Made with <i class="fas fa-heart"></i> by SmartPrint Team</p>
+        </div>
+    </footer>
+
+    <!-- Main JS -->
+    <script src="/js/main.js"></script>
 </body>
-</html> 
+</html>

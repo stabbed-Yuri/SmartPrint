@@ -1,200 +1,216 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
-<head th:replace="~{fragments/layout :: head('Profile', ~{})}">
-    <title>Profile - SmartPrint</title>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile - SmartPrint</title>
+  <!-- Font Awesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="/css/custom.css">
 </head>
-
-<body th:replace="~{fragments/layout :: main-layout('Profile', ~{::content}, ~{}, ~{})}">
-    <th:block th:fragment="content">
-        <div class="container py-4">
-            <div class="row">
-                <!-- Sidebar -->
-                <div class="col-lg-3">
-                    <div class="card border-0 shadow-sm mb-4">
-                        <div class="card-body text-center p-4">
-                            <div class="avatar-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 100px; height: 100px; font-size: 40px;">
-                                <span th:text="${#strings.substring(user.name, 0, 1).toUpperCase()}">U</span>
-                            </div>
-                            <h4 class="mb-1" th:text="${user.name}">User Name</h4>
-                            <p class="text-muted mb-3" th:text="${user.email}">user@example.com</p>
-                            <div class="d-grid">
-                                <button class="btn btn-primary mb-2">
-                                    <i class="fas fa-edit me-2"></i> Edit Profile
-                                </button>
-                                <button class="btn btn-outline-secondary">
-                                    <i class="fas fa-key me-2"></i> Change Password
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="list-group mb-4 border-0 shadow-sm">
-                        <a href="#" class="list-group-item list-group-item-action active">
-                            <i class="fas fa-user me-2"></i> Profile
-                        </a>
-                        <a href="#" class="list-group-item list-group-item-action">
-                            <i class="fas fa-file-alt me-2"></i> My Print Jobs
-                        </a>
-                        <a href="#" class="list-group-item list-group-item-action">
-                            <i class="fas fa-credit-card me-2"></i> Payment Methods
-                        </a>
-                        <a href="#" class="list-group-item list-group-item-action">
-                            <i class="fas fa-cog me-2"></i> Account Settings
-                        </a>
-                    </div>
-                </div>
-                
-                <!-- Main Content -->
-                <div class="col-lg-9">
-                    <h2 class="mb-4">Profile Information</h2>
-                    
-                    <!-- Profile Stats -->
-                    <div class="row g-4 mb-4">
-                        <div class="col-md-4">
-                            <div class="card border-0 shadow-sm h-100">
-                                <div class="card-body">
-                                    <div class="d-flex align-items-center">
-                                        <div class="flex-shrink-0 me-3">
-                                            <div class="bg-primary-subtle p-3 rounded">
-                                                <i class="fas fa-wallet text-primary fa-2x"></i>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <h6 class="card-subtitle mb-1 text-muted">Account Balance</h6>
-                                            <h3 class="card-title mb-0">$<span th:text="${user.balance}">500</span></h3>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="card-footer bg-white border-0 text-end">
-                                    <a href="#" class="btn btn-sm btn-outline-primary">Add Funds</a>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-4">
-                            <div class="card border-0 shadow-sm h-100">
-                                <div class="card-body">
-                                    <div class="d-flex align-items-center">
-                                        <div class="flex-shrink-0 me-3">
-                                            <div class="bg-success-subtle p-3 rounded">
-                                                <i class="fas fa-file-alt text-success fa-2x"></i>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <h6 class="card-subtitle mb-1 text-muted">Total Print Jobs</h6>
-                                            <h3 class="card-title mb-0" th:text="${recentJobs != null ? recentJobs.size() : 0}">12</h3>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="card-footer bg-white border-0 text-end">
-                                    <a href="#" class="btn btn-sm btn-outline-success">View All</a>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-4">
-                            <div class="card border-0 shadow-sm h-100">
-                                <div class="card-body">
-                                    <div class="d-flex align-items-center">
-                                        <div class="flex-shrink-0 me-3">
-                                            <div class="bg-info-subtle p-3 rounded">
-                                                <i class="fas fa-money-bill-wave text-info fa-2x"></i>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <h6 class="card-subtitle mb-1 text-muted">Payment Method</h6>
-                                            <p class="card-title mb-0 h5" th:text="${user.paymentMethod}">Credit Card</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="card-footer bg-white border-0 text-end">
-                                    <a href="#" class="btn btn-sm btn-outline-info">Change</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Recent Activity -->
-                    <div class="card border-0 shadow-sm mb-4">
-                        <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-                            <h5 class="mb-0">Recent Activity</h5>
-                            <a href="#" class="btn btn-sm btn-outline-primary">View All</a>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table table-hover mb-0">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Date</th>
-                                            <th>Activity</th>
-                                            <th>Details</th>
-                                            <th>Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr th:if="${recentJobs != null}" th:each="job : ${recentJobs}">
-                                            <td th:text="${#temporals.format(job.createdAt, 'yyyy-MM-dd HH:mm')}">2024-04-25 14:30</td>
-                                            <td>Print Job</td>
-                                            <td th:text="${job.documentName}">Assignment.pdf</td>
-                                            <td>
-                                                <span class="status-badge" th:classappend="${job.status.toString().toLowerCase()}" 
-                                                      th:text="${job.status}">COMPLETED</span>
-                                            </td>
-                                        </tr>
-                                        <tr th:if="${recentJobs == null || recentJobs.isEmpty()}">
-                                            <td colspan="4" class="text-center py-4 text-muted">No recent activity</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Account Settings Form -->
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-header bg-white py-3">
-                            <h5 class="mb-0">Account Settings</h5>
-                        </div>
-                        <div class="card-body">
-                            <form>
-                                <div class="mb-3">
-                                    <label for="fullName" class="form-label">Full Name</label>
-                                    <input type="text" class="form-control" id="fullName" th:value="${user.name}">
-                                </div>
-                                <div class="mb-3">
-                                    <label for="email" class="form-label">Email Address</label>
-                                    <input type="email" class="form-control" id="email" th:value="${user.email}" disabled>
-                                    <div class="form-text">Your email address cannot be changed.</div>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="phone" class="form-label">Phone Number</label>
-                                    <input type="tel" class="form-control" id="phone" value="+1 (555) 123-4567">
-                                </div>
-                                <div class="mb-4">
-                                    <label for="preferences" class="form-label">Notification Preferences</label>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
-                                        <label class="form-check-label" for="emailNotifications">
-                                            Email Notifications
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="smsNotifications">
-                                        <label class="form-check-label" for="smsNotifications">
-                                            SMS Notifications
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <button type="button" class="btn btn-outline-secondary me-2">Cancel</button>
-                                    <button type="submit" class="btn btn-primary">Save Changes</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
+<body class="layout">
+  <!-- Header -->
+  <header class="site-header">
+    <nav class="navbar">
+        <div class="container">
+            <a class="brand" href="/">
+                <i class="fas fa-print"></i> SmartPrint
+            </a>
+            <button class="nav-toggle" id="navToggle">☰</button>
+       
+            <div class="auth-links">
+                <!-- If NOT logged in -->
+                <a href="/login" class="btn-outline" th:if="${authentication == null}">Login</a>
+                <a href="/signup" class="btn-primary" th:if="${authentication == null}">Sign Up</a>
+                <!-- If logged in -->
+                <a href="/profile" class="btn-outline" th:if="${authentication != null}">Profile</a>
+                <a href="/printing" class="btn-outline" th:if="${authentication != null}">Printing</a>
+                <a href="/admin" class="btn-primary" th:if="${authentication != null and authentication.authorities.?[authority == 'ROLE_ADMIN'].size() > 0}">Admin</a>
+                <a href="/logout" class="btn-outline" th:if="${authentication != null}">Logout</a>
             </div>
         </div>
-    </th:block>
+    </nav>
+</header>
+
+  <main>
+    <div class="container profile-container">
+      <div class="profile-grid" style="display: flex; gap: 2rem;">
+        <!-- Sidebar -->
+        <aside class="col-sidebar">
+          <div class="profile-card">
+            <div class="text-center">
+              <div class="avatar-circle">T</div>
+              <h4>test test</h4>
+              <p class="text-muted">test@test.com</p>
+              <div class="profile-buttons">
+                <button class="btn-primary large" style="width:100%;height:48px;font-size:1.1rem;">Edit Profile</button>
+                <button class="btn-outline large" style="width:100%;height:48px;font-size:1.1rem;">Change Password</button>
+              </div>
+            </div>
+          </div>
+          <nav class="profile-nav">
+            <ul>
+              <li class="active"><i class="fas fa-user"></i> Profile</li>
+              <li><i class="fas fa-file-alt"></i> My Print Jobs</li>
+              <li><i class="fas fa-credit-card"></i> Payment Methods</li>
+              <li><i class="fas fa-cog"></i> Account Settings</li>
+            </ul>
+          </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <section class="col-main">
+          <h2>Profile Information</h2>
+
+          <!-- Stats Cards -->
+          <div class="stats-cards">
+            <div class="profile-card stat-card" style="flex:1;">
+              <div class="card-body text-center">
+                <div class="stat-icon">
+                  <i class="fas fa-wallet"></i>
+                </div>
+                <h6>Account Balance</h6>
+                <p class="stat-value">৳0.00</p>
+              </div>
+              <div class="profile-buttons">
+                <button class="btn-outline large" style="width:100%;height:48px;font-size:1.1rem;">Add Funds</button>
+              </div>
+            </div>
+            <div class="profile-card stat-card" style="flex:1;">
+              <div class="card-body text-center">
+                <div class="stat-icon">
+                  <i class="fas fa-file-alt"></i>
+                </div>
+                <h6>Total Print Jobs</h6>
+                <p class="stat-value">4</p>
+              </div>
+              <div class="profile-buttons">
+                <button class="btn-outline large" style="width:100%;height:48px;font-size:1.1rem;">View All</button>
+              </div>
+            </div>
+            <div class="profile-card stat-card" style="flex:1;">
+              <div class="card-body text-center">
+                <div class="stat-icon">
+                  <i class="fas fa-money-bill-wave"></i>
+                </div>
+                <h6>Payment Method</h6>
+                <p class="stat-value">–</p>
+              </div>
+              <div class="profile-buttons">
+                <button class="btn-outline large" style="width:100%;height:48px;font-size:1.1rem;">Change</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Activity -->
+          <div class="recent-activity">
+            <h3>Recent Activity</h3>
+            <div style="overflow-x:auto;">
+              <table class="activity-table" style="width:100%; border-collapse:collapse;">
+                <thead>
+                  <tr style="background:var(--primary-light);">
+                    <th style="padding:0.75rem 1rem; text-align:left;">Date</th>
+                    <th style="padding:0.75rem 1rem; text-align:left;">Activity</th>
+                    <th style="padding:0.75rem 1rem; text-align:left;">Details</th>
+                    <th style="padding:0.75rem 1rem; text-align:left;">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="padding:0.75rem 1rem;">2025-05-13</td>
+                    <td style="padding:0.75rem 1rem;">Print Job</td>
+                    <td style="padding:0.75rem 1rem;">test stand prototype.pdf</td>
+                    <td style="padding:0.75rem 1rem;">Pending</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:0.75rem 1rem;">2025-05-20</td>
+                    <td style="padding:0.75rem 1rem;">Print Job</td>
+                    <td style="padding:0.75rem 1rem;">UVT_Letterhead.pdf</td>
+                    <td style="padding:0.75rem 1rem;">Pending</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Account Settings -->
+          <div class="account-settings">
+            <h3>Account Settings</h3>
+            <form>
+              <div class="form-group">
+                <label for="fullName">Full Name</label>
+                <input id="fullName" class="form-input" type="text" value="test test">
+              </div>
+              <div class="form-group">
+                <label for="email">Email Address</label>
+                <input id="email" class="form-input" type="email" value="test@test.com" disabled>
+              </div>
+              <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input id="phone" class="form-input" type="tel" value="+1 (555) 123-4567">
+              </div>
+              <div class="form-group btn-group" style="display:flex; gap:0.5rem;">
+                <button type="button" class="btn-outline large" style="flex:1;height:48px;font-size:1.1rem;">Cancel</button>
+                <button type="submit" class="btn-primary large" style="flex:1;height:48px;font-size:1.1rem;">Save Changes</button>
+              </div>
+            </form>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div>
+        <h5>SmartPrint</h5>
+        <p>Smart printing solution for students and professionals.</p>
+        <div class="social-links">
+          <a href="#"><i class="fab fa-facebook-f"></i></a>
+          <a href="#"><i class="fab fa-twitter"></i></a>
+          <a href="#"><i class="fab fa-instagram"></i></a>
+          <a href="#"><i class="fab fa-linkedin-in"></i></a>
+        </div>
+      </div>
+      <div>
+        <h6>Quick Links</h6>
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/dashboard">Dashboard</a></li>
+          <li><a href="/printers">Printers</a></li>
+          <li><a href="/jobs">Print Jobs</a></li>
+        </ul>
+      </div>
+      <div>
+        <h6>Help & Support</h6>
+        <ul>
+          <li><a href="#">FAQ</a></li>
+          <li><a href="#">Contact Us</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms of Service</a></li>
+        </ul>
+      </div>
+      <div>
+        <h6>Account</h6>
+        <ul>
+          <li><a href="/profile">My Profile</a></li>
+          <li><a href="/settings">Settings</a></li>
+          <li><a href="/login">Login</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 SmartPrint. All rights reserved.</p>
+      <p>Made with <i class="fas fa-heart"></i> by SmartPrint Team</p>
+    </div>
+  </footer>
+
+  <script src="/js/main.js"></script>
 </body>
-</html> 
+</html>

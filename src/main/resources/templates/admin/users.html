@@ -86,27 +86,27 @@
                 <p>View and manage all users in the SmartPrint system.</p>
             </section>
 
-            <section class="controls">
-                <div class="search-box">
-                    <input type="text" id="userSearch" placeholder="Search users...">
-                    <button><i class="fas fa-search"></i></button>
-                </div>
-                <div class="filter-controls">
-                    <select id="roleFilter">
-                        <option value="">All Roles</option>
-                        <option th:each="role : ${T(com.example.smartprint.model.UserRole).values()}" 
-                                th:value="${role}" th:text="${role}">STUDENT</option>
-                    </select>
-                    <select id="statusFilter">
-                        <option value="">All Statuses</option>
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                    </select>
-                </div>
-                <button class="btn btn-primary" id="addUserBtn">
-                    <i class="fas fa-plus"></i> Add User
-                </button>
-            </section>
+<!--            <section class="controls">-->
+<!--                <div class="search-box">-->
+<!--                    <input type="text" id="userSearch" placeholder="Search users...">-->
+<!--                    <button><i class="fas fa-search"></i></button>-->
+<!--                </div>-->
+<!--                <div class="filter-controls">-->
+<!--                    <select id="roleFilter">-->
+<!--                        <option value="">All Roles</option>-->
+<!--                        <option th:each="role : ${T(com.example.smartprint.model.UserRole).values()}" -->
+<!--                                th:value="${role}" th:text="${role}">STUDENT</option>-->
+<!--                    </select>-->
+<!--                    <select id="statusFilter">-->
+<!--                        <option value="">All Statuses</option>-->
+<!--                        <option value="active">Active</option>-->
+<!--                        <option value="inactive">Inactive</option>-->
+<!--                    </select>-->
+<!--                </div>-->
+<!--                <button class="btn btn-primary" id="addUserBtn">-->
+<!--                    <i class="fas fa-plus"></i> Add User-->
+<!--                </button>-->
+<!--            </section>-->
 
             <section class="table-container">
                 <div class="panel user-panel">

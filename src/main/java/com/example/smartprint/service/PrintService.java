@@ -53,8 +53,21 @@ public class PrintService {
     }
     
     public int countPdfPages(File pdfFile) throws IOException {
+        if (!pdfFile.exists()) {
+            throw new IOException("PDF file does not exist: " + pdfFile.getPath());
+        }
+        
+        if (pdfFile.length() == 0) {
+            throw new IOException("PDF file is empty: " + pdfFile.getPath());
+        }
+        
         try (PDDocument document = PDDocument.load(pdfFile)) {
+            if (document.isEncrypted()) {
+                throw new IOException("Cannot process encrypted PDF: " + pdfFile.getPath());
+            }
             return document.getNumberOfPages();
+        } catch (IOException e) {
+            throw new IOException("Error reading PDF file: " + e.getMessage(), e);
         }
     }
     

@@ -189,9 +189,27 @@ function handleFiles(e) {
     const files = Array.from(e.target.files);
     
     files.forEach(file => {
+        // Validate file
+        if (!file) {
+            showToast('Error', 'Invalid file selected', 'danger');
+            return;
+        }
+
         // Check if it's a PDF
         if (file.type !== 'application/pdf') {
-            alert('Only PDF files are allowed.');
+            showToast('Error', 'Only PDF files are allowed', 'danger');
+            return;
+        }
+
+        // Check file size (max 50MB)
+        if (file.size > 50 * 1024 * 1024) {
+            showToast('Error', 'File size must be less than 50MB', 'danger');
+            return;
+        }
+
+        // Check if file is empty
+        if (file.size === 0) {
+            showToast('Error', 'File is empty', 'danger');
             return;
         }
         
@@ -201,34 +219,49 @@ function handleFiles(e) {
         // Create a FileReader to count pages
         const fileReader = new FileReader();
         fileReader.onload = function() {
-            const typedarray = new Uint8Array(this.result);
-            
-            // Count PDF pages (simplified version)
-            let pageCount = countPdfPages(typedarray);
-            
-            // Create file object
-            const fileObj = {
-                id: fileId,
-                file: file,
-                name: file.name,
-                size: file.size,
-                pages: pageCount
-            };
-            
-            uploadedFiles.push(fileObj);
-            totalPages += pageCount;
-            
-            // Render file preview
-            renderFilePreview(fileObj);
-            
-            // Update total pages
-            totalPagesElement.textContent = totalPages;
-            
-            // Update page count in calculator
-            if (pageCountInput) {
-                pageCountInput.value = totalPages;
-                updateCalculator();
+            try {
+                const typedarray = new Uint8Array(this.result);
+                
+                // Count PDF pages
+                countPdfPages(file, function(count) {
+                    if (count === 0) {
+                        showToast('Error', 'Could not process PDF file. Please try another file.', 'danger');
+                        return;
+                    }
+
+                    // Create file object
+                    const fileObj = {
+                        id: fileId,
+                        file: file,
+                        name: file.name,
+                        size: file.size,
+                        pages: count
+                    };
+                    
+                    uploadedFiles.push(fileObj);
+                    totalPages += count;
+                    
+                    // Render file preview
+                    renderFilePreview(fileObj);
+                    
+                    // Update total pages
+                    totalPagesElement.textContent = totalPages;
+                    
+                    // Update page count in calculator
+                    if (pageCountInput) {
+                        pageCountInput.value = totalPages;
+                        updateCalculator();
+                    }
+                });
+            } catch (error) {
+                console.error('Error processing file:', error);
+                showToast('Error', 'Error processing file. Please try again.', 'danger');
             }
+        };
+        
+        fileReader.onerror = function() {
+            console.error('Error reading file:', fileReader.error);
+            showToast('Error', 'Error reading file. Please try again.', 'danger');
         };
         
         fileReader.readAsArrayBuffer(file);
@@ -239,14 +272,25 @@ function handleFiles(e) {
 }
 
 // Function to count PDF pages
-function countPdfPages(data) {
-    // In a real implementation, you would use a library like pdf.js
-    // This is a simple estimation by counting /Page objects
-    const pdfString = String.fromCharCode.apply(null, data.slice(0, Math.min(data.length, 5000)));
-    const pageMatch = pdfString.match(/\/Type\s*\/Page\b/g);
-    
-    // Return page count or default to 1 if can't determine
-    return pageMatch ? pageMatch.length : 1;
+function countPdfPages(file, callback) {
+    const reader = new FileReader();
+    reader.onload = async function() {
+        try {
+            const typedarray = new Uint8Array(this.result);
+            const pdf = await pdfjsLib.getDocument(typedarray).promise;
+            callback(pdf.numPages);
+        } catch (error) {
+            console.error('Error counting PDF pages:', error);
+            showToast('Error', 'Could not process PDF file. Please try another file.', 'danger');
+            callback(0);
+        }
+    };
+    reader.onerror = function() {
+        console.error('Error reading file:', reader.error);
+        showToast('Error', 'Error reading file. Please try again.', 'danger');
+        callback(0);
+    };
+    reader.readAsArrayBuffer(file);
 }
 
 function formatFileSize(bytes) {

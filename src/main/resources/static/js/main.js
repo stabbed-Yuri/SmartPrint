@@ -23,6 +23,61 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Console log for debugging
     console.log('SmartPrint JavaScript initialized');
+
+    // Modal logic (generic)
+    document.querySelectorAll('[data-modal-target]').forEach(function(openBtn) {
+        const modalId = openBtn.getAttribute('data-modal-target');
+        const modal = document.getElementById(modalId);
+        if (!modal) return;
+        const closeBtn = modal.querySelector('.btn-close');
+        const cancelBtn = modal.querySelector('.btn-cancel');
+        function openModal() { modal.classList.add('show'); modal.style.display = 'block'; }
+        function closeModal() { modal.classList.remove('show'); modal.style.display = 'none'; }
+        openBtn.addEventListener('click', openModal);
+        if (closeBtn) closeBtn.addEventListener('click', closeModal);
+        if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+        window.addEventListener('click', function(e) { if (e.target === modal) closeModal(); });
+    });
+
+    // Navbar toggler
+    const toggler = document.getElementById('navbarToggler');
+    const menu = document.getElementById('navbarMenu');
+    if (toggler && menu) {
+        toggler.addEventListener('click', function() {
+            menu.classList.toggle('show');
+        });
+    }
+
+    // Dropdowns
+    document.querySelectorAll('.dropdown-toggle').forEach(function(btn) {
+        const menu = btn.nextElementSibling;
+        if (!menu) return;
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            menu.classList.toggle('show');
+        });
+        document.addEventListener('click', function() {
+            menu.classList.remove('show');
+        });
+    });
+
+    // Form validation
+    document.querySelectorAll('form.needs-validation').forEach(function(form) {
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+
+    // Alert dismiss
+    document.querySelectorAll('.alert-dismissible .btn-close').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            btn.closest('.alert').style.display = 'none';
+        });
+    });
 });
 
 /**

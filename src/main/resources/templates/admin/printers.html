@@ -105,30 +105,30 @@
                 </div>
             </section>
 
-            <section class="controls">
-                <div class="search-box">
-                    <input type="text" id="printerSearch" placeholder="Search printers...">
-                    <button><i class="fas fa-search"></i></button>
-                </div>
-                <div class="filter-controls">
-                    <select id="statusFilter">
-                        <option value="">All Statuses</option>
-                        <option th:each="status : ${T(com.example.smartprint.model.PrinterStatus).values()}"
-                                th:value="${status}" th:text="${status}">ONLINE</option>
-                    </select>
-                    <select id="locationFilter">
-                        <option value="">All Locations</option>
-                        <option th:each="location : ${printers.![location].distinct()}"
-                                th:value="${location}" th:text="${location}">Main Library</option>
-                    </select>
-                </div>
-                <button class="btn btn-primary" id="addPrinterBtn">
-                    <i class="fas fa-plus"></i> Add Printer
-                </button>
-            </section>
+<!--            <section class="controls">-->
+<!--                <div class="search-box">-->
+<!--                    <input type="text" id="printerSearch" placeholder="Search printers...">-->
+<!--                    <button><i class="fas fa-search"></i></button>-->
+<!--                </div>-->
+<!--                <div class="filter-controls">-->
+<!--                    <select id="statusFilter">-->
+<!--                        <option value="">All Statuses</option>-->
+<!--                        <option th:each="status : ${T(com.example.smartprint.model.PrinterStatus).values()}"-->
+<!--                                th:value="${status}" th:text="${status}">ONLINE</option>-->
+<!--                    </select>-->
+<!--                    <select id="locationFilter">-->
+<!--                        <option value="">All Locations</option>-->
+<!--                        <option th:each="location : ${#sets.toSet(printers.![location])}"-->
+<!--                                th:value="${location}" th:text="${location}">Main Library</option>-->
+<!--                    </select>-->
+<!--                </div>-->
+<!--                <button class="btn btn-primary" id="addPrinterBtn">-->
+<!--                    <i class="fas fa-plus"></i> Add Printer-->
+<!--                </button>-->
+<!--            </section>-->
 
             <section class="printers-grid">
-                <div class="printer-card" th:each="printer : ${printers}">
+                <div class="printer-card" th:each="printer : ${printers}" th:data-printer-id="${printer.id}">
                     <div class="printer-header">
                         <h3 th:text="${printer.name}">Library Printer</h3>
                         <span class="printer-status" th:classappend="${printer.status.name().toLowerCase()}" 
@@ -183,5 +183,6 @@
     </footer>
 
     <script th:src="@{/js/script.js}"></script>
+    <script th:src="@{/js/printer-status.js}"></script>
 </body>
 </html> 

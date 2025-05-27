@@ -187,12 +187,12 @@
         </div>
         
         <!-- Add Printer Modal -->
-        <div class="modal fade" id="printerModal" tabindex="-1" aria-labelledby="printerModalLabel" aria-hidden="true">
+        <div class="modal" id="printerModal" tabindex="-1" aria-labelledby="printerModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="printerModalLabel">Add New Printer</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close" id="closePrinterModal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <form id="printerForm" th:action="@{/printers/new}" method="post" class="needs-validation" novalidate>
@@ -206,29 +206,8 @@
                                 <input type="text" class="form-control" id="location" name="location" required>
                                 <div class="invalid-feedback">Please provide a location.</div>
                             </div>
-                            <div class="mb-3">
-                                <label for="ipAddress" class="form-label">IP Address</label>
-                                <input type="text" class="form-control" id="ipAddress" name="ipAddress" 
-                                       pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" 
-                                       required>
-                                <div class="invalid-feedback">Please provide a valid IP address (e.g., 192.168.1.100).</div>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="blackAndWhiteRate" class="form-label">Black & White Rate (৳)</label>
-                                    <input type="number" class="form-control" id="blackAndWhiteRate" name="blackAndWhiteRate" 
-                                           min="0" step="0.01" required>
-                                    <div class="invalid-feedback">Please provide a valid rate.</div>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="colorRate" class="form-label">Color Rate (৳)</label>
-                                    <input type="number" class="form-control" id="colorRate" name="colorRate" 
-                                           min="0" step="0.01" required>
-                                    <div class="invalid-feedback">Please provide a valid rate.</div>
-                                </div>
-                            </div>
                             <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-secondary" id="cancelPrinterModal">Cancel</button>
                                 <button type="submit" class="btn btn-primary">Add Printer</button>
                             </div>
                         </form>
@@ -350,14 +329,25 @@
                     });
                 }
                 
-                // Initialize modal
+                // Modal logic
                 const openModalButton = document.querySelector('.open-printer-modal');
-                if (openModalButton) {
-                    openModalButton.addEventListener('click', function() {
-                        const printerModal = new bootstrap.Modal(document.getElementById('printerModal'));
-                        printerModal.show();
-                    });
+                const printerModal = document.getElementById('printerModal');
+                const closeModalButton = document.getElementById('closePrinterModal');
+                const cancelModalButton = document.getElementById('cancelPrinterModal');
+                function openModal() {
+                    printerModal.style.display = 'block';
+                    printerModal.removeAttribute('aria-hidden');
                 }
+                function closeModal() {
+                    printerModal.style.display = 'none';
+                    printerModal.setAttribute('aria-hidden', 'true');
+                }
+                if (openModalButton) openModalButton.addEventListener('click', openModal);
+                if (closeModalButton) closeModalButton.addEventListener('click', closeModal);
+                if (cancelModalButton) cancelModalButton.addEventListener('click', closeModal);
+                window.addEventListener('click', function(event) {
+                    if (event.target === printerModal) closeModal();
+                });
             });
         </script>
     </th:block>

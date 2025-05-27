@@ -39,9 +39,13 @@ public class SecurityConfig {
                 .requestMatchers("/", "/index", "/index.html").permitAll()
                 .requestMatchers("/login", "/login.html").permitAll()
                 .requestMatchers("/signup", "/signup.html").permitAll()
+                .requestMatchers("/api/test/ping").permitAll()  // Test endpoint
                 
                 // Admin endpoints - require ADMIN role
                 .requestMatchers("/admin/**", "/admin").permitAll()
+                
+                // Printer status endpoints - explicitly permitted for authenticated users
+                .requestMatchers("/api/printers/status", "/api/printers/*/status").authenticated()
                 
                 // Printer owner endpoints - require ADMIN or PRINTER_OWNER role
                 .requestMatchers("/printers/add", "/printers/new").hasAnyRole("ADMIN", "PRINTER_OWNER")

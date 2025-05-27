@@ -93,41 +93,41 @@
                 </div>
                 <div class="stats-card">
                     <h3>Pending Jobs</h3>
-                    <p class="stats-number" th:text="${printJobs.?[status == T(com.example.smartprint.model.PrintJobStatus).PENDING].size()}">18</p>
+                    <p class="stats-number" th:text="${printJobs.?[status.name() == 'PENDING'].size()}">18</p>
                 </div>
                 <div class="stats-card">
                     <h3>Processing Jobs</h3>
-                    <p class="stats-number" th:text="${printJobs.?[status == T(com.example.smartprint.model.PrintJobStatus).PROCESSING].size()}">7</p>
+                    <p class="stats-number" th:text="${printJobs.?[status.name() == 'PROCESSING'].size()}">7</p>
                 </div>
                 <div class="stats-card">
                     <h3>Completed Jobs</h3>
-                    <p class="stats-number" th:text="${printJobs.?[status == T(com.example.smartprint.model.PrintJobStatus).COMPLETED].size()}">100</p>
+                    <p class="stats-number" th:text="${printJobs.?[status.name() == 'COMPLETED'].size()}">100</p>
                 </div>
             </section>
 
-            <section class="controls">
-                <div class="search-box">
-                    <input type="text" id="jobSearch" placeholder="Search jobs...">
-                    <button><i class="fas fa-search"></i></button>
-                </div>
-                <div class="filter-controls">
-                    <select id="statusFilter">
-                        <option value="">All Statuses</option>
-                        <option th:each="status : ${T(com.example.smartprint.model.PrintJobStatus).values()}"
-                                th:value="${status}" th:text="${status}">PENDING</option>
-                    </select>
-                    <select id="printerFilter">
-                        <option value="">All Printers</option>
-                        <option th:each="printer : ${printJobs.![printer].distinct()}"
-                                th:if="${printer != null}"
-                                th:value="${printer.id}" th:text="${printer.name}">Library Printer</option>
-                    </select>
-                </div>
-                <div class="date-range">
-                    <input type="date" id="startDate" placeholder="Start Date">
-                    <input type="date" id="endDate" placeholder="End Date">
-                </div>
-            </section>
+<!--            <section class="controls">-->
+<!--                <div class="search-box">-->
+<!--                    <input type="text" id="jobSearch" placeholder="Search jobs...">-->
+<!--                    <button><i class="fas fa-search"></i></button>-->
+<!--                </div>-->
+<!--                <div class="filter-controls">-->
+<!--                    <select id="statusFilter">-->
+<!--                        <option value="">All Statuses</option>-->
+<!--                        <option th:each="status : ${T(com.example.smartprint.model.PrintJobStatus).values()}"-->
+<!--                                th:value="${status}" th:text="${status}">PENDING</option>-->
+<!--                    </select>-->
+<!--                    <select id="printerFilter">-->
+<!--                        <option value="">All Printers</option>-->
+<!--                        <option th:each="printer : ${#sets.toSet(printJobs.![printer])}"-->
+<!--                                th:if="${printer != null}"-->
+<!--                                th:value="${printer.id}" th:text="${printer.name}">Library Printer</option>-->
+<!--                    </select>-->
+<!--                </div>-->
+<!--                <div class="date-range">-->
+<!--                    <input type="date" id="startDate" placeholder="Start Date">-->
+<!--                    <input type="date" id="endDate" placeholder="End Date">-->
+<!--                </div>-->
+<!--            </section>-->
 
             <section class="table-container">
                 <div class="panel job-panel">
@@ -157,25 +157,25 @@
                                     <td th:text="${job.printer != null ? job.printer.name : 'Unknown'}">Library Printer</td>
                                     <td th:text="${job.totalPages}">5</td>
                                     <td th:text="${'$' + #numbers.formatDecimal(job.totalCost, 1, 2)}">$1.25</td>
-                                    <td><span class="status-badge" th:classappend="${job.status.toString().toLowerCase()}" th:text="${job.status}">PENDING</span></td>
-                                    <td th:text="${#dates.format(job.createdAt, 'yyyy-MM-dd HH:mm')}">2023-05-10 14:30</td>
+                                    <td><span class="status-badge" th:classappend="${job.status.name().toLowerCase()}" th:text="${job.status}">PENDING</span></td>
+                                    <td th:text="${#temporals.format(job.createdAt, 'yyyy-MM-dd HH:mm')}">2023-05-10 14:30</td>
                                     <td class="actions-cell">
                                         <a th:href="@{/admin/jobs/{id}(id=${job.id})}" class="btn btn-small btn-info" title="View Details">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <button th:if="${job.status.toString() == 'PENDING'}" 
+                                        <button th:if="${job.status.name() == 'PENDING'}" 
                                                 class="btn btn-small btn-warning job-action-btn" 
                                                 th:data-job-id="${job.id}" 
                                                 th:data-action="process">
                                             <i class="fas fa-play"></i>
                                         </button>
-                                        <button th:if="${job.status.toString() == 'PROCESSING'}" 
+                                        <button th:if="${job.status.name() == 'PROCESSING'}" 
                                                 class="btn btn-small btn-success job-action-btn" 
                                                 th:data-job-id="${job.id}" 
                                                 th:data-action="complete">
                                             <i class="fas fa-check"></i>
                                         </button>
-                                        <button th:if="${job.status.toString() != 'COMPLETED' && job.status.toString() != 'CANCELLED'}" 
+                                        <button th:if="${job.status.name() != 'COMPLETED' && job.status.name() != 'CANCELLED'}" 
                                                 class="btn btn-small btn-danger job-action-btn" 
                                                 th:data-job-id="${job.id}" 
                                                 th:data-action="cancel">

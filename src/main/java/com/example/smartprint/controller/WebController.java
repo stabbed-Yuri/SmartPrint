@@ -90,6 +90,8 @@ public class WebController {
     @GetMapping("/")
     public String index(Model model) {
         // Get some basic stats to display on the homepage
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+      model.addAttribute("authentication", authentication);
         List<Printer> allPrinters = printerRepository.findAll();
         long printerCount = allPrinters.size();
         List<Printer> activePrinters = printerRepository.findByStatus(PrinterStatus.ONLINE);
@@ -117,12 +119,16 @@ public class WebController {
 
     @GetMapping("/login")
     public String login(Model model) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        model.addAttribute("authentication", authentication);
         model.addAttribute("activePage", "login");
         return "login";
     }
 
     @GetMapping("/signup")
     public String signup(Model model) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        model.addAttribute("authentication", authentication);
         model.addAttribute("activePage", "signup");
         model.addAttribute("user", new User());
         return "signup";
@@ -137,6 +143,8 @@ public class WebController {
     public String profile(Model model, Authentication authentication) {
         try {
             // Get the current user from authentication
+           
+        model.addAttribute("authentication", authentication);
             User currentUser = userService.getUserFromToken("Bearer " + jwtUtils.generateToken(authentication.getName()));
             model.addAttribute("user", currentUser);
             
@@ -154,6 +162,8 @@ public class WebController {
 
     @GetMapping("/printing")
     public String printing(Model model) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        model.addAttribute("authentication", authentication);
         model.addAttribute("activePage", "printing");
         
         // Get available printers
