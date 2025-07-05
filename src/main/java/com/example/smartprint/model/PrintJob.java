@@ -69,4 +69,10 @@ public class PrintJob {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private DeliveryOption deliveryOption;
+
+    @Column(nullable = false)
+    private int copyCount = 1;
+
+    @Column
+    private String cupsJobId;
 } 

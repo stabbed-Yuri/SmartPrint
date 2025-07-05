@@ -288,61 +288,85 @@ function checkPrinterStatus(ipAddress, statusElement, printerId) {
     statusElement.textContent = 'Checking...';
     statusElement.className = 'status-badge';
     
-    // In a real implementation, this would make an API call to check the status
-    setTimeout(() => {
-        try {
-            fetch(`http://${ipAddress}:5000/status`, { 
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json'
-                },
-                // Set a timeout to avoid hanging
-                signal: AbortSignal.timeout(5000)
-            })
-            .then(response => {
-                if (response.ok) {
-                    return response.json();
-                }
-                throw new Error('Failed to connect to printer');
-            })
-            .then(data => {
-                statusElement.textContent = 'ONLINE';
-                statusElement.className = 'status-badge online';
+    // Use the backend API to check printer status
+    if (printerId) {
+        fetch(`/api/printers/${printerId}/status`, { 
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
+            },
+            // Set a timeout to avoid hanging
+            signal: AbortSignal.timeout(10000)
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+            throw new Error('Failed to get printer status');
+        })
+        .then(data => {
+            console.log('Printer status response:', data);
+            
+            // Update UI based on the response
+            if (data.status) {
+                const status = data.status.toUpperCase();
+                statusElement.textContent = status;
+                statusElement.className = `status-badge ${status.toLowerCase()}`;
                 
-                // Update the printer status in the database
-                if (printerId) {
-                    updatePrinterStatus(printerId, 'ONLINE');
+                // Show success message
+                if (status === 'ONLINE') {
+                    showToast('Success', 'Printer is online and ready', 'success');
+                } else if (status === 'OFFLINE') {
+                    showToast('Warning', 'Printer is offline', 'warning');
+                } else if (status === 'ERROR') {
+                    showToast('Error', 'Printer has an error', 'danger');
                 }
-            })
-            .catch(error => {
-                statusElement.textContent = 'OFFLINE';
-                statusElement.className = 'status-badge offline';
-                console.error('Error checking printer status:', error);
-                
-                // Update the printer status in the database
-                if (printerId) {
-                    updatePrinterStatus(printerId, 'OFFLINE');
-                }
-            });
-        } catch (error) {
-            statusElement.textContent = 'ERROR';
-            statusElement.className = 'status-badge error';
-            console.error('Error:', error);
-        }
-    }, 1000);
-}
-
-/**
- * Update Printer Status in Database
- */
-function updatePrinterStatus(printerId, status) {
-    fetch(`/api/printers/${printerId}/status`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status: status })
-    }).catch(error => console.error('Error updating printer status:', error));
+            } else {
+                statusElement.textContent = 'UNKNOWN';
+                statusElement.className = 'status-badge error';
+                showToast('Error', 'Could not determine printer status', 'danger');
+            }
+        })
+        .catch(error => {
+            statusElement.textContent = 'OFFLINE';
+            statusElement.className = 'status-badge offline';
+            console.error('Error checking printer status:', error);
+            showToast('Error', 'Failed to check printer status: ' + error.message, 'danger');
+        });
+    } else {
+        // Fallback to direct printer call if no printer ID
+        setTimeout(() => {
+            try {
+                fetch(`http://${ipAddress}:5000/status`, { 
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    },
+                    // Set a timeout to avoid hanging
+                    signal: AbortSignal.timeout(5000)
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    }
+                    throw new Error('Failed to connect to printer');
+                })
+                .then(data => {
+                    statusElement.textContent = 'ONLINE';
+                    statusElement.className = 'status-badge online';
+                })
+                .catch(error => {
+                    statusElement.textContent = 'OFFLINE';
+                    statusElement.className = 'status-badge offline';
+                    console.error('Error checking printer status:', error);
+                });
+            } catch (error) {
+                statusElement.textContent = 'ERROR';
+                statusElement.className = 'status-badge error';
+                console.error('Error:', error);
+            }
+        }, 1000);
+    }
 }
 
 /**

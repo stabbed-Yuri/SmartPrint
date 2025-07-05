@@ -2,7 +2,7 @@ package com.example.smartprint.model;
 
 public enum PrintJobStatus {
     PENDING,
-    PROCESSING,
+    PRINTING,
     COMPLETED,
     FAILED,
     CANCELLED

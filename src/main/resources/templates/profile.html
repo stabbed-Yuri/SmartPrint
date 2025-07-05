@@ -17,39 +17,29 @@
   <!-- Header -->
   <header class="site-header">
     <nav class="navbar">
-        <div class="container">
-            <a class="brand" href="/">
-                <i class="fas fa-print"></i> SmartPrint
-            </a>
-            <button class="nav-toggle" id="navToggle">☰</button>
-       
-            <div class="auth-links">
-                <!-- If NOT logged in -->
-                <a href="/login" class="btn-outline" th:if="${authentication == null}">Login</a>
-                <a href="/signup" class="btn-primary" th:if="${authentication == null}">Sign Up</a>
-                <!-- If logged in -->
-                <a href="/profile" class="btn-outline" th:if="${authentication != null}">Profile</a>
-                <a href="/printing" class="btn-outline" th:if="${authentication != null}">Printing</a>
-                <a href="/admin" class="btn-primary" th:if="${authentication != null and authentication.authorities.?[authority == 'ROLE_ADMIN'].size() > 0}">Admin</a>
-                <a href="/logout" class="btn-outline" th:if="${authentication != null}">Logout</a>
-            </div>
+      <div class="container">
+        <a class="brand" href="/"> <i class="fas fa-print"></i> SmartPrint</a>
+        <button class="nav-toggle" id="navToggle">☰</button>
+        <div class="auth-links">
+          <a href="/logout" class="btn-outline">Logout</a>
         </div>
+      </div>
     </nav>
-</header>
+  </header>
 
   <main>
     <div class="container profile-container">
-      <div class="profile-grid" style="display: flex; gap: 2rem;">
+      <div class="profile-grid">
         <!-- Sidebar -->
         <aside class="col-sidebar">
-          <div class="profile-card">
-            <div class="text-center">
+          <div class="card profile-card">
+            <div class="card-body text-center">
               <div class="avatar-circle">T</div>
               <h4>test test</h4>
               <p class="text-muted">test@test.com</p>
               <div class="profile-buttons">
-                <button class="btn-primary large" style="width:100%;height:48px;font-size:1.1rem;">Edit Profile</button>
-                <button class="btn-outline large" style="width:100%;height:48px;font-size:1.1rem;">Change Password</button>
+                <button class="btn-primary">Edit Profile</button>
+                <button class="btn-outline">Change Password</button>
               </div>
             </div>
           </div>
@@ -69,40 +59,40 @@
 
           <!-- Stats Cards -->
           <div class="stats-cards">
-            <div class="profile-card stat-card" style="flex:1;">
-              <div class="card-body text-center">
+            <div class="card stat-card">
+              <div class="card-body">
                 <div class="stat-icon">
                   <i class="fas fa-wallet"></i>
                 </div>
                 <h6>Account Balance</h6>
                 <p class="stat-value">৳0.00</p>
               </div>
-              <div class="profile-buttons">
-                <button class="btn-outline large" style="width:100%;height:48px;font-size:1.1rem;">Add Funds</button>
+              <div class="card-footer">
+                <button class="btn-sm btn-outline">Add Funds</button>
               </div>
             </div>
-            <div class="profile-card stat-card" style="flex:1;">
-              <div class="card-body text-center">
+            <div class="card stat-card">
+              <div class="card-body">
                 <div class="stat-icon">
                   <i class="fas fa-file-alt"></i>
                 </div>
                 <h6>Total Print Jobs</h6>
                 <p class="stat-value">4</p>
               </div>
-              <div class="profile-buttons">
-                <button class="btn-outline large" style="width:100%;height:48px;font-size:1.1rem;">View All</button>
+              <div class="card-footer">
+                <button class="btn-sm btn-outline">View All</button>
               </div>
             </div>
-            <div class="profile-card stat-card" style="flex:1;">
-              <div class="card-body text-center">
+            <div class="card stat-card">
+              <div class="card-body">
                 <div class="stat-icon">
                   <i class="fas fa-money-bill-wave"></i>
                 </div>
                 <h6>Payment Method</h6>
                 <p class="stat-value">–</p>
               </div>
-              <div class="profile-buttons">
-                <button class="btn-outline large" style="width:100%;height:48px;font-size:1.1rem;">Change</button>
+              <div class="card-footer">
+                <button class="btn-sm btn-outline">Change</button>
               </div>
             </div>
           </div>
@@ -110,32 +100,15 @@
           <!-- Recent Activity -->
           <div class="recent-activity">
             <h3>Recent Activity</h3>
-            <div style="overflow-x:auto;">
-              <table class="activity-table" style="width:100%; border-collapse:collapse;">
-                <thead>
-                  <tr style="background:var(--primary-light);">
-                    <th style="padding:0.75rem 1rem; text-align:left;">Date</th>
-                    <th style="padding:0.75rem 1rem; text-align:left;">Activity</th>
-                    <th style="padding:0.75rem 1rem; text-align:left;">Details</th>
-                    <th style="padding:0.75rem 1rem; text-align:left;">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td style="padding:0.75rem 1rem;">2025-05-13</td>
-                    <td style="padding:0.75rem 1rem;">Print Job</td>
-                    <td style="padding:0.75rem 1rem;">test stand prototype.pdf</td>
-                    <td style="padding:0.75rem 1rem;">Pending</td>
-                  </tr>
-                  <tr>
-                    <td style="padding:0.75rem 1rem;">2025-05-20</td>
-                    <td style="padding:0.75rem 1rem;">Print Job</td>
-                    <td style="padding:0.75rem 1rem;">UVT_Letterhead.pdf</td>
-                    <td style="padding:0.75rem 1rem;">Pending</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+            <table class="activity-table">
+              <thead>
+                <tr><th>Date</th><th>Activity</th><th>Details</th><th>Status</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>2025-05-13</td><td>Print Job</td><td>test stand prototype.pdf</td><td>Pending</td></tr>
+                <tr><td>2025-05-20</td><td>Print Job</td><td>UVT_Letterhead.pdf</td><td>Pending</td></tr>
+              </tbody>
+            </table>
           </div>
 
           <!-- Account Settings -->
@@ -144,19 +117,23 @@
             <form>
               <div class="form-group">
                 <label for="fullName">Full Name</label>
-                <input id="fullName" class="form-input" type="text" value="test test">
+                <input id="fullName" class="form-control" type="text" value="test test">
               </div>
               <div class="form-group">
                 <label for="email">Email Address</label>
-                <input id="email" class="form-input" type="email" value="test@test.com" disabled>
+                <input id="email" class="form-control" type="email" value="test@test.com" disabled>
               </div>
               <div class="form-group">
                 <label for="phone">Phone Number</label>
-                <input id="phone" class="form-input" type="tel" value="+1 (555) 123-4567">
+                <input id="phone" class="form-control" type="tel" value="+1 (555) 123-4567">
               </div>
-              <div class="form-group btn-group" style="display:flex; gap:0.5rem;">
-                <button type="button" class="btn-outline large" style="flex:1;height:48px;font-size:1.1rem;">Cancel</button>
-                <button type="submit" class="btn-primary large" style="flex:1;height:48px;font-size:1.1rem;">Save Changes</button>
+              <div class="form-group checkbox-group">
+                <label><input type="checkbox" checked> Email Notifications</label>
+                <label><input type="checkbox"> SMS Notifications</label>
+              </div>
+              <div class="form-group btn-group">
+                <button type="button" class="btn-outline">Cancel</button>
+                <button type="submit" class="btn-primary">Save Changes</button>
               </div>
             </form>
           </div>
@@ -168,46 +145,10 @@
   <!-- Footer -->
   <footer class="site-footer">
     <div class="container footer-grid">
-      <div>
-        <h5>SmartPrint</h5>
-        <p>Smart printing solution for students and professionals.</p>
-        <div class="social-links">
-          <a href="#"><i class="fab fa-facebook-f"></i></a>
-          <a href="#"><i class="fab fa-twitter"></i></a>
-          <a href="#"><i class="fab fa-instagram"></i></a>
-          <a href="#"><i class="fab fa-linkedin-in"></i></a>
-        </div>
-      </div>
-      <div>
-        <h6>Quick Links</h6>
-        <ul>
-          <li><a href="/">Home</a></li>
-          <li><a href="/dashboard">Dashboard</a></li>
-          <li><a href="/printers">Printers</a></li>
-          <li><a href="/jobs">Print Jobs</a></li>
-        </ul>
-      </div>
-      <div>
-        <h6>Help & Support</h6>
-        <ul>
-          <li><a href="#">FAQ</a></li>
-          <li><a href="#">Contact Us</a></li>
-          <li><a href="#">Privacy Policy</a></li>
-          <li><a href="#">Terms of Service</a></li>
-        </ul>
-      </div>
-      <div>
-        <h6>Account</h6>
-        <ul>
-          <li><a href="/profile">My Profile</a></li>
-          <li><a href="/settings">Settings</a></li>
-          <li><a href="/login">Login</a></li>
-        </ul>
-      </div>
+      <!-- quick links, social -->
     </div>
     <div class="footer-bottom">
-      <p>&copy; 2025 SmartPrint. All rights reserved.</p>
-      <p>Made with <i class="fas fa-heart"></i> by SmartPrint Team</p>
+      <p>&copy; 2025 SmartPrint.</p>
     </div>
   </footer>
 

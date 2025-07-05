@@ -58,4 +58,15 @@ public class FileStorageService {
             throw new IOException("Failed to store file: " + e.getMessage(), e);
         }
     }
+
+    public String getUploadsDir() {
+        return uploadDir;
+    }
+
+    public void deleteFile(String filePath) throws IOException {
+        Path path = Paths.get(filePath);
+        if (Files.exists(path)) {
+            Files.delete(path);
+        }
+    }
 }

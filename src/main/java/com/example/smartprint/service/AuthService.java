@@ -1,7 +1,6 @@
 package com.example.smartprint.service;
 
 import com.example.smartprint.model.User;
-import com.example.smartprint.model.UserRole;
 import com.example.smartprint.repository.UserRepository;
 import com.example.smartprint.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
@@ -35,8 +34,9 @@ public class AuthService {
             
             // Set default values
             user.setPassword(passwordEncoder.encode(user.getPassword()));
-            user.setRole(UserRole.USER);
+            user.setRole(User.Role.USER);
             user.setBalance(0.0);
+            user.setActive(true);
             
             logger.debug("Registering new user with email: {}", user.getEmail());
             User savedUser = userRepository.save(user);
@@ -63,8 +63,9 @@ public class AuthService {
             
             // Set default values
             user.setPassword(passwordEncoder.encode(user.getPassword()));
-            user.setRole(UserRole.USER);
+            user.setRole(User.Role.USER);
             user.setBalance(0.0);
+            user.setActive(true);
             
             logger.debug("Registering new user with email: {}", user.getEmail());
             User savedUser = userRepository.save(user);
@@ -85,6 +86,10 @@ public class AuthService {
                 logger.warn("Invalid password attempt for user: {}", email);
                 throw new RuntimeException("Invalid password");
             }
+
+            user.setLastLogin(java.time.LocalDateTime.now());
+            user.setActive(true);
+            userRepository.save(user);
 
             logger.info("User logged in successfully: {}", email);
             return jwtUtils.generateToken(email);

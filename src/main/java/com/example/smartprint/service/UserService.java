@@ -68,6 +68,15 @@ public class UserService {
     }
     
     /**
+     * Get a user by their email
+     * @param email The user's email
+     * @return The user object or null if not found
+     */
+    public User getUserByEmail(String email) {
+        return userRepository.findByEmail(email).orElse(null);
+    }
+    
+    /**
      * Get a user by their ID
      * @param id The user ID
      * @return The user object or null if not found
@@ -109,5 +118,40 @@ public class UserService {
         } catch (Exception e) {
             return false;
         }
+    }
+    
+    /**
+     * Check if user has sufficient balance for a transaction
+     * @param user The user to check
+     * @param amount The amount needed
+     * @return true if user has sufficient balance, false otherwise
+     */
+    public boolean hasSufficientBalance(User user, double amount) {
+        return user.getBalance() >= amount;
+    }
+    
+    /**
+     * Deduct amount from user's balance
+     * @param user The user to deduct from
+     * @param amount The amount to deduct
+     * @return The updated user
+     */
+    public User deductBalance(User user, double amount) {
+        if (!hasSufficientBalance(user, amount)) {
+            throw new RuntimeException("Insufficient balance");
+        }
+        user.setBalance(user.getBalance() - amount);
+        return userRepository.save(user);
+    }
+    
+    /**
+     * Add amount to user's balance
+     * @param user The user to add to
+     * @param amount The amount to add
+     * @return The updated user
+     */
+    public User addBalance(User user, double amount) {
+        user.setBalance(user.getBalance() + amount);
+        return userRepository.save(user);
     }
 }

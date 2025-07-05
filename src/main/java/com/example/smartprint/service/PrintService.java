@@ -3,10 +3,14 @@ package com.example.smartprint.service;
 import com.example.smartprint.model.*;
 import com.example.smartprint.repository.PrintJobRepository;
 import com.example.smartprint.repository.PrinterRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
@@ -15,6 +19,9 @@ import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import com.example.smartprint.dto.PiPrintResponseDTO;
+import com.example.smartprint.dto.PiJobStatusDTO;
 
 @Service
 public class PrintService {
@@ -31,25 +38,92 @@ public class PrintService {
 
     public void sendToPrinter(PrintJob job) {
         Printer printer = job.getPrinter();
+        if (printer.getIpAddress() == null || printer.getIpAddress().isEmpty()) {
+            throw new IllegalArgumentException("Printer '" + printer.getName() + "' does not have an IP address configured.");
+        }
         String piEndpoint = "http://" + printer.getIpAddress() + ":5000/print";
 
-        job.getFilePaths().forEach(filePath -> {
-            try {
-                File file = new File(filePath);
-                byte[] fileContent = Files.readAllBytes(file.toPath());
+        // This is a temporary fix to handle only the first file, as the Pi script
+        // only accepts one file at a time. A proper fix would involve zipping files
+        // or allowing multiple file parts in the Pi script.
+        String firstFilePath = job.getFilePaths().stream().findFirst().orElse(null);
+        if (firstFilePath == null) {
+            // No files to print, just return.
+            return;
+        }
 
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.APPLICATION_PDF);
+        try {
+            File file = new File(firstFilePath);
+            byte[] fileContent = Files.readAllBytes(file.toPath());
 
-                restTemplate.postForEntity(
-                        piEndpoint,
-                        new HttpEntity<>(fileContent, headers),
-                        String.class
-                );
-            } catch (IOException e) {
-                throw new RuntimeException("File send failed: " + e.getMessage());
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+            body.add("file", new ByteArrayResource(fileContent) {
+                @Override
+                public String getFilename() {
+                    return file.getName();
+                }
+            });
+            body.add("copies", job.getCopyCount());
+            body.add("orientation", job.getOrientation().toString());
+            body.add("color", job.getPrintType() == PrintType.COLOR);
+            body.add("media", job.getPageSize().toString());
+
+            ResponseEntity<PiPrintResponseDTO> response = restTemplate.postForEntity(
+                    piEndpoint,
+                    new HttpEntity<>(body, headers),
+                    PiPrintResponseDTO.class
+            );
+
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                String cupsJobId = response.getBody().getCupsJobId();
+                if (cupsJobId != null && !cupsJobId.isEmpty()) {
+                    job.setCupsJobId(cupsJobId);
+                    // Save the job with the new CUPS ID
+                    printJobRepository.save(job);
+                }
+            } else {
+                // If the response is not successful, or body is null, throw an exception
+                String errorDetails = response.getBody() != null ? response.getBody().getDetails() : "Unknown error from printer API";
+                throw new RuntimeException("Failed to send job to printer: " + errorDetails);
             }
-        });
+
+        } catch (IOException e) {
+            throw new RuntimeException("File send failed: " + e.getMessage());
+        }
+    }
+
+    public void updateJobStatus(PrintJob job) {
+        if (job.getCupsJobId() == null || job.getCupsJobId().isEmpty()) {
+            return; // Cannot check status without a CUPS job ID
+        }
+
+        Printer printer = job.getPrinter();
+        String piEndpoint = "http://" + printer.getIpAddress() + ":5000/job_status/" + job.getCupsJobId();
+
+        try {
+            ResponseEntity<PiJobStatusDTO> response = restTemplate.getForEntity(piEndpoint, PiJobStatusDTO.class);
+
+            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+                PiJobStatusDTO statusDTO = response.getBody();
+                String piStatus = statusDTO.getStatus();
+
+                if ("COMPLETED".equalsIgnoreCase(piStatus) && job.getStatus() != PrintJobStatus.COMPLETED) {
+                    job.setStatus(PrintJobStatus.COMPLETED);
+                    job.setCompletedAt(LocalDateTime.now());
+                    printJobRepository.save(job);
+                } else if ("PRINTING".equalsIgnoreCase(piStatus) && job.getStatus() != PrintJobStatus.PRINTING) {
+                    job.setStatus(PrintJobStatus.PRINTING);
+                    printJobRepository.save(job);
+                }
+            }
+        } catch (Exception e) {
+            // Log the error but don't throw, as this might be a transient network issue
+            // In a real app, you'd use a proper logger
+            System.err.println("Could not update job status for job " + job.getId() + ": " + e.getMessage());
+        }
     }
     
     public int countPdfPages(File pdfFile) throws IOException {

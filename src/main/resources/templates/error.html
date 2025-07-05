@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error - SmartPrint</title>
+    
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="/css/custom.css">
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/images/favicon.png">
+</head>
+<body class="layout">
+    <!-- Header -->
+    <header class="site-header">
+        <nav class="navbar">
+            <div class="container">
+                <a class="brand" href="/">
+                    <i class="fas fa-print"></i> SmartPrint
+                </a>
+                <div class="auth-links">
+                    <a href="/" class="btn-outline">Home</a>
+                    <a href="/login" class="btn-primary">Login</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <section class="error-section">
+            <div class="container text-center">
+                <div class="error-content">
+                    <i class="fas fa-exclamation-triangle error-icon"></i>
+                    <h1>Oops! Something went wrong</h1>
+                    <p class="error-message">
+                        <span th:if="${status}" th:text="'Error ' + ${status} + ': ' + ${error}">Error 500: Internal Server Error</span>
+                        <span th:unless="${status}">An unexpected error occurred. Please try again.</span>
+                    </p>
+                    <p class="error-details" th:if="${message}">
+                        <span th:text="${message}">Error details</span>
+                    </p>
+                    <div class="error-actions">
+                        <a href="/" class="btn-primary">Go Home</a>
+                        <a href="javascript:history.back()" class="btn-outline">Go Back</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2025 SmartPrint. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html> 

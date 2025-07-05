@@ -12,6 +12,11 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 public class User {
+    public enum Role {
+        USER,
+        ADMIN
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -27,7 +32,7 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private UserRole role;
+    private Role role;
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL)
     private List<Printer> printers = new ArrayList<>();

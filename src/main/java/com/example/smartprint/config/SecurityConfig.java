@@ -15,6 +15,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
@@ -22,60 +23,28 @@ public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
     private final UserDetailsService userDetailsService;
+    private final CorsConfigurationSource corsConfigurationSource;
 
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter, UserDetailsService userDetailsService) {
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter, UserDetailsService userDetailsService, CorsConfigurationSource corsConfigurationSource) {
         this.jwtAuthFilter = jwtAuthFilter;
         this.userDetailsService = userDetailsService;
+        this.corsConfigurationSource = corsConfigurationSource;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource))
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
-                // Public endpoints
-                .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/logout").permitAll()
-                .requestMatchers("/static/**", "/css/**", "/js/**", "/images/**").permitAll()
-                .requestMatchers("/", "/index", "/index.html").permitAll()
-                .requestMatchers("/login", "/login.html").permitAll()
-                .requestMatchers("/signup", "/signup.html").permitAll()
-                .requestMatchers("/api/test/ping").permitAll()  // Test endpoint
-                
-                // Admin endpoints - require ADMIN role
-                .requestMatchers("/admin/**", "/admin").permitAll()
-                
-                // Printer status endpoints - explicitly permitted for authenticated users
-                .requestMatchers("/api/printers/status", "/api/printers/*/status").authenticated()
-                
-                // Printer owner endpoints - require ADMIN or PRINTER_OWNER role
-                .requestMatchers("/printers/add", "/printers/new").hasAnyRole("ADMIN", "PRINTER_OWNER")
-                
-                // Protected endpoints - require authentication but explicitly listed
-                .requestMatchers("/dashboard", "/profile", "/printing", "/printers/**", "/jobs/**").authenticated()
-                .requestMatchers("/api/print/**", "/api/printers/**", "/api/users/**").authenticated()
-                
-                // Default - require authentication
-                .anyRequest().authenticated()
-            )
-            // Add form login configuration
-            .formLogin(form -> form
-                .loginPage("/login")
-                .loginProcessingUrl("/login")
-                .defaultSuccessUrl("/dashboard", true)
-                .failureUrl("/login?error=true")
-                .usernameParameter("username")
-                .passwordParameter("password")
-                .permitAll()
-            )
-            .logout(logout -> logout
-                .logoutUrl("/logout")
-                .logoutSuccessUrl("/login?logout=true")
-                .invalidateHttpSession(true)
-                .deleteCookies("jwt")
-                .permitAll()
+                // Public API endpoints
+                .requestMatchers("/api/auth/**", "/api/test/**").permitAll()
+                .requestMatchers("/api/printers", "/api/printers/", "/api/printers/status", "/api/printers/*/status").permitAll()
+                .requestMatchers("/api/**").authenticated()
+                .anyRequest().permitAll()
             )
             .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             .authenticationProvider(authenticationProvider())
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

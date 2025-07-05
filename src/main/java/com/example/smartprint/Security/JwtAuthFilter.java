@@ -35,20 +35,28 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         try {
             String jwt = parseJwt(request);
-            if (jwt != null && jwtUtils.validateToken(jwt)) {
-                String username = jwtUtils.extractUsername(jwt);
+            logger.info("Request URL: {}", request.getRequestURI());
+            logger.info("JWT token found: {}", jwt != null);
+            
+            if (jwt != null) {
+                logger.info("Validating JWT token...");
+                if (jwtUtils.validateToken(jwt)) {
+                    String username = jwtUtils.extractUsername(jwt);
+                    logger.info("JWT token is valid for user: {}", username);
 
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities());
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                logger.info("Authentication successful for user: {}", username);
-                logger.info("User authorities: {}", userDetails.getAuthorities());
-                
-                // Log request URL for debugging
-                logger.info("Request URL: {}", request.getRequestURI());
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    logger.info("Authentication successful for user: {}", username);
+                    logger.info("User authorities: {}", userDetails.getAuthorities());
+                } else {
+                    logger.warn("JWT token validation failed");
+                }
+            } else {
+                logger.info("No JWT token found in request");
             }
         } catch (Exception e) {
             logger.error("Authentication exception: {}", e.getMessage(), e);
