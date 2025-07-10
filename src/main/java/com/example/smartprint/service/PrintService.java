@@ -36,6 +36,12 @@ public class PrintService {
         this.printJobRepository = printJobRepository;
     }
 
+    private void ensureMutableFilePaths(PrintJob job) {
+        if (job.getFilePaths() != null && !(job.getFilePaths() instanceof java.util.ArrayList)) {
+            job.setFilePaths(new ArrayList<>(job.getFilePaths()));
+        }
+    }
+
     public void sendToPrinter(PrintJob job) {
         Printer printer = job.getPrinter();
         if (printer.getIpAddress() == null || printer.getIpAddress().isEmpty()) {
@@ -81,6 +87,8 @@ public class PrintService {
                 String cupsJobId = response.getBody().getCupsJobId();
                 if (cupsJobId != null && !cupsJobId.isEmpty()) {
                     job.setCupsJobId(cupsJobId);
+                    // Ensure filePaths is mutable before saving
+                    ensureMutableFilePaths(job);
                     // Save the job with the new CUPS ID
                     printJobRepository.save(job);
                 }
@@ -109,19 +117,40 @@ public class PrintService {
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
                 PiJobStatusDTO statusDTO = response.getBody();
                 String piStatus = statusDTO.getStatus();
-
-                if ("COMPLETED".equalsIgnoreCase(piStatus) && job.getStatus() != PrintJobStatus.COMPLETED) {
-                    job.setStatus(PrintJobStatus.COMPLETED);
-                    job.setCompletedAt(LocalDateTime.now());
-                    printJobRepository.save(job);
-                } else if ("PRINTING".equalsIgnoreCase(piStatus) && job.getStatus() != PrintJobStatus.PRINTING) {
-                    job.setStatus(PrintJobStatus.PRINTING);
+                PrintJobStatus newStatus = null;
+                if (piStatus == null) return;
+                switch (piStatus.toUpperCase()) {
+                    case "PENDING":
+                        newStatus = PrintJobStatus.PENDING;
+                        break;
+                    case "PRINTING":
+                    case "PROCESSING":
+                        newStatus = PrintJobStatus.PRINTING;
+                        break;
+                    case "COMPLETED":
+                        newStatus = PrintJobStatus.COMPLETED;
+                        break;
+                    case "CANCELLED":
+                        newStatus = PrintJobStatus.CANCELLED;
+                        break;
+                    case "FAILED":
+                    case "ABORTED":
+                        newStatus = PrintJobStatus.FAILED;
+                        break;
+                    default:
+                        // Optionally handle unknown statuses
+                        break;
+                }
+                if (newStatus != null && job.getStatus() != newStatus) {
+                    job.setStatus(newStatus);
+                    if (newStatus == PrintJobStatus.COMPLETED || newStatus == PrintJobStatus.CANCELLED || newStatus == PrintJobStatus.FAILED) {
+                        job.setCompletedAt(LocalDateTime.now());
+                    }
                     printJobRepository.save(job);
                 }
             }
         } catch (Exception e) {
             // Log the error but don't throw, as this might be a transient network issue
-            // In a real app, you'd use a proper logger
             System.err.println("Could not update job status for job " + job.getId() + ": " + e.getMessage());
         }
     }
@@ -175,7 +204,8 @@ public class PrintService {
             PrintJob printJob = new PrintJob();
             printJob.setUser(user);
             printJob.setPrinter(printer);
-            printJob.setFilePaths(filePaths);
+            // Ensure filePaths is always a mutable list
+            printJob.setFilePaths(new ArrayList<>(filePaths));
             printJob.setStatus(PrintJobStatus.PENDING);
             printJob.setCreatedAt(LocalDateTime.now());
             printJob.setTotalPages(totalPages);

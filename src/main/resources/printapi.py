@@ -203,31 +203,31 @@ def job_status(job_id):
     Check the status of a specific CUPS job.
     """
     try:
-        # lpstat -o shows pending/printing jobs
-        cmd = ["lpstat", "-o"]
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        
-        if result.returncode != 0:
-            return jsonify(error="Failed to get job statuses", details=result.stderr), 500
+        # Check if job is in the active queue
+        active_cmd = ["lpstat", "-o"]
+        active_result = subprocess.run(active_cmd, capture_output=True, text=True)
+        if active_result.returncode != 0:
+            return jsonify(error="Failed to get job statuses", details=active_result.stderr), 500
+        if job_id in active_result.stdout:
+            # Job is still in the active queue
+            return jsonify(jobId=job_id, status="PRINTING", message="Job is in the active queue."), 200
 
-        job_found = False
-        is_active = False
-        output_lines = result.stdout.strip().split('\n')
-        
-        for line in output_lines:
-            if line.strip().startswith(job_id):
-                job_found = True
-                # If the job is in the output of `lpstat -o`, it's active (pending or printing)
-                is_active = True
-                break
-        
-        if not job_found:
-            # If not in active jobs, it might be completed or have failed.
-            # We'll assume "COMPLETED" if not found, as CUPS history is harder to parse reliably.
-            return jsonify(jobId=job_id, status="COMPLETED", message="Job is no longer in the active queue."), 200
-        else:
-            return jsonify(jobId=job_id, status="PRINTING", message="Job is currently in the active queue."), 200
+        # Check if job is in completed jobs
+        completed_cmd = ["lpstat", "-W", "completed", "-o"]
+        completed_result = subprocess.run(completed_cmd, capture_output=True, text=True)
+        if completed_result.returncode != 0:
+            return jsonify(error="Failed to get completed job statuses", details=completed_result.stderr), 500
+        if job_id in completed_result.stdout:
+            # Check if printer is idle
+            status_cmd = ["lpstat", "-p", PRINTER_NAME]
+            status_result = subprocess.run(status_cmd, capture_output=True, text=True)
+            if "idle" in status_result.stdout.lower():
+                return jsonify(jobId=job_id, status="COMPLETED", message="Job is completed and printer is idle."), 200
+            else:
+                return jsonify(jobId=job_id, status="PRINTING", message="Job is completed in CUPS, but printer is still busy."), 200
 
+        # If not found in active or completed, assume cancelled or failed
+        return jsonify(jobId=job_id, status="CANCELLED", message="Job not found; may have been cancelled or failed."), 200
     except Exception as e:
         app.logger.exception("Error checking job status for %s", job_id)
         return jsonify(error="Internal server error", details=str(e)), 500

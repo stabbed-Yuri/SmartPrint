@@ -15,12 +15,19 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         {children || <Outlet />}
       </main>
       <Toaster
-        position="top-right"
+        position="top-center"
+        containerStyle={{
+          top: 80,
+          right: 20,
+          left: 20,
+        }}
         toastOptions={{
           duration: 4000,
           style: {
             background: '#363636',
             color: '#fff',
+            maxWidth: '400px',
+            wordBreak: 'break-word',
           },
           success: {
             duration: 3000,
