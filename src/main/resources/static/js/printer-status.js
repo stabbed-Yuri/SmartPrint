@@ -30,7 +30,7 @@ function initPrinterStatusRefresh() {
  * Refresh the printer status by fetching current data from the server
  */
 function refreshPrinterStatus() {
-    fetch('/api/printers/status')
+    fetch('/api/printer-status')
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok');

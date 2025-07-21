@@ -14,6 +14,7 @@ import PrintingPage from './pages/PrintingPage';
 import PrintersPage from './pages/PrintersPage';
 import JobsPage from './pages/JobsPage';
 import ProfilePage from './pages/ProfilePage';
+import DemoPrinterPage from './pages/DemoPrintPage';
 
 // Admin Pages
 import AdminPage from './pages/AdminPage';
@@ -50,6 +51,15 @@ function App() {
                   <ProtectedRoute>
                     <DashboardPage />
                   </ProtectedRoute>
+                }
+              
+              />
+              <Route
+                path="demo-print"
+                element={
+                <ProtectedRoute>
+                <DemoPrinterPage />
+                </ProtectedRoute>
                 }
               />
               <Route

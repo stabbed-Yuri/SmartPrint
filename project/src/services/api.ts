@@ -105,7 +105,7 @@ class ApiService {
   }
 
   async getPrinterStatus(id?: number): Promise<unknown> {
-    const url = id ? `/printers/${id}/status` : '/printers/status';
+    const url = id ? `/printers/${id}/status` : '/printer-status';
     const response = await api.get(url);
     return response.data;
   }

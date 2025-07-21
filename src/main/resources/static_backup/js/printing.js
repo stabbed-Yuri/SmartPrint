@@ -207,7 +207,7 @@ async function submitPrintJob() {
 // Update printer status periodically
 setInterval(async () => {
     try {
-        const response = await fetch('/api/printers/status', {
+        const response = await fetch('/api/printer-status', {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }

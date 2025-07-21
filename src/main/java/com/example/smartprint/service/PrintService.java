@@ -144,7 +144,7 @@ public class PrintService {
                 if (newStatus != null && job.getStatus() != newStatus) {
                     job.setStatus(newStatus);
                     if (newStatus == PrintJobStatus.COMPLETED || newStatus == PrintJobStatus.CANCELLED || newStatus == PrintJobStatus.FAILED) {
-                        job.setCompletedAt(LocalDateTime.now());
+                    job.setCompletedAt(LocalDateTime.now());
                     }
                     printJobRepository.save(job);
                 }
