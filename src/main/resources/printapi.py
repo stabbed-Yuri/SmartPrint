@@ -223,7 +223,7 @@ def job_status(job_id):
             status_result = subprocess.run(status_cmd, capture_output=True, text=True)
             if "idle" in status_result.stdout.lower():
                 return jsonify(jobId=job_id, status="COMPLETED", message="Job is completed and printer is idle."), 200
-            else:
+        else:
                 return jsonify(jobId=job_id, status="PRINTING", message="Job is completed in CUPS, but printer is still busy."), 200
 
         # If not found in active or completed, assume cancelled or failed

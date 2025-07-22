@@ -13,16 +13,17 @@ interface FileUploadProps {
 const FileUpload: React.FC<FileUploadProps> = ({
   files,
   onFilesChange,
-  maxFiles = 10,
+  maxFiles = 1, // Only allow 1 file
   maxSize = 50 * 1024 * 1024, // 50MB
   acceptedTypes = ['application/pdf'],
 }) => {
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
-      const newFiles = [...files, ...acceptedFiles].slice(0, maxFiles);
+      // Only keep the most recent file
+      const newFiles = acceptedFiles.slice(0, 1);
       onFilesChange(newFiles);
     },
-    [files, onFilesChange, maxFiles]
+    [onFilesChange]
   );
 
   const removeFile = (index: number) => {
@@ -36,7 +37,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
       'application/pdf': ['.pdf'],
     },
     maxSize,
-    multiple: true,
+    multiple: false, // Only allow one file
   });
 
   const formatFileSize = (bytes: number) => {

@@ -18,6 +18,8 @@ const DemoPrintPage: React.FC = () => {
   const [selectedPrinter, setSelectedPrinter] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [pollingJob, setPollingJob] = useState<any | null>(null); // Store job for polling
+  const [jobError, setJobError] = useState<string | null>(null);
 
   useEffect(() => {
     // Fetch printers
@@ -27,9 +29,33 @@ const DemoPrintPage: React.FC = () => {
     });
   }, []);
 
+  // Poll for job status if pollingJob is set
+  useEffect(() => {
+    if (!pollingJob || ['COMPLETED', 'FAILED', 'CANCELLED'].includes(pollingJob.status)) {
+      return;
+    }
+    const interval = setInterval(async () => {
+      try {
+        const response = await api.get(`/print/jobs/${pollingJob.id}`);
+        const updatedJob = response.data;
+        setPollingJob(updatedJob);
+        if (["COMPLETED", "FAILED", "CANCELLED"].includes(updatedJob.status)) {
+          setMessage(`Job \"${updatedJob.documentName}\" is ${updatedJob.status.toLowerCase()}.`);
+          clearInterval(interval);
+        }
+      } catch (error: any) {
+        setJobError('Could not get job status update.');
+        clearInterval(interval);
+      }
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [pollingJob]);
+
   const handlePrint = async () => {
     setLoading(true);
     setMessage(null);
+    setJobError(null);
+    setPollingJob(null);
     try {
       // Generate PDF
       const pdfDoc = await PDFDocument.create();
@@ -58,12 +84,13 @@ const DemoPrintPage: React.FC = () => {
       formData.append('orientation', 'PORTRAIT'); // Default
       formData.append('copyCount', '1'); // Default
 
-      // Send to backend
-      await api.post('/print', formData, {
+      // Send to backend and get job object
+      const response = await api.post('/print', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      setMessage('Print job submitted successfully!');
+      setMessage('Print job submitted! Now printing...');
       setText('');
+      setPollingJob(response.data); // Start polling for status
     } catch (err: any) {
       setMessage('Failed to print: ' + (err.response?.data?.error || err.message));
     } finally {
@@ -136,6 +163,25 @@ const DemoPrintPage: React.FC = () => {
         {loading ? 'Printing...' : 'Print'}
       </button>
       {message && <div className="mt-4 text-center text-lg font-semibold text-green-700">{message}</div>}
+      {jobError && <div className="mt-2 text-center text-red-600">{jobError}</div>}
+      {pollingJob && (
+        <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-semibold text-lg text-blue-800">Print Job Status</h3>
+              <p className="text-blue-700 mt-1">
+                Document: <span className="font-medium">{pollingJob.documentName}</span>
+              </p>
+            </div>
+            <div className="flex items-center space-x-4">
+              <span className="text-blue-800 font-semibold">{pollingJob.status}</span>
+              {!["COMPLETED", "FAILED", "CANCELLED"].includes(pollingJob.status) && (
+                <span className="ml-2 animate-spin inline-block w-5 h-5 border-2 border-blue-400 border-t-transparent rounded-full"></span>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
